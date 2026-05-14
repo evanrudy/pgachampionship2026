@@ -669,6 +669,55 @@ body {
   margin-left: 4px;
   vertical-align: middle;
 }
+
+/* ── SG TOGGLE BAR ─────────────────────────────── */
+.sg-toggle-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px 6px;
+  flex-wrap: wrap;
+}
+.sg-toggle-label {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-right: 2px;
+  white-space: nowrap;
+}
+.sg-btn {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 500;
+  padding: 3px 10px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--white);
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: background 0.14s, border-color 0.14s, color 0.14s;
+  letter-spacing: 0.04em;
+}
+.sg-btn:hover { border-color: var(--highlighter); color: var(--billiard); }
+.sg-btn.active {
+  background: var(--billiard-mid);
+  border-color: var(--billiard-mid);
+  color: var(--white);
+}
+
+/* ── SG TABLE COLUMNS ──────────────────────────── */
+.player-table th.sg-col { color: var(--text-dim); font-size: 0.66rem; }
+td.sg-val {
+  text-align: right;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  white-space: nowrap;
+}
+td.sg-val.sg-pos  { color: #2a8c54; font-weight: 500; }
+td.sg-val.sg-neg  { color: var(--red); }
+td.sg-val.sg-zero { color: var(--text-muted); }
 </style>
 </head>
 <body>
@@ -744,6 +793,15 @@ body {
       ⚠&nbsp; No live scores yet — fetching from ESPN…
     </div>
 
+    <div class="sg-toggle-bar" id="sg-toggle-bar" style="display:none">
+      <span class="sg-toggle-label">Shots Gained:</span>
+      <button class="sg-btn" id="btn-sg_total" onclick="toggleSGCol('sg_total')">Tot</button>
+      <button class="sg-btn" id="btn-sg_ott"   onclick="toggleSGCol('sg_ott')">OTT</button>
+      <button class="sg-btn" id="btn-sg_app"   onclick="toggleSGCol('sg_app')">APP</button>
+      <button class="sg-btn" id="btn-sg_arg"   onclick="toggleSGCol('sg_arg')">ARG</button>
+      <button class="sg-btn" id="btn-sg_putt"  onclick="toggleSGCol('sg_putt')">PUTT</button>
+    </div>
+
     <div class="col-header-bar">
       <span class="c">POS</span>
       <span>PLAYER</span>
@@ -767,11 +825,13 @@ body {
 /* ════════════════════════════════════════════════
    STATE
 ════════════════════════════════════════════════ */
-let snap         = null;
-let liveScores   = {};
-let cval         = 60;
-let ctick        = null;
-let expanded     = new Set();
+let snap          = null;
+let liveScores    = {};
+let sgData        = {};
+let visibleSGCols = new Set();
+let cval          = 60;
+let ctick         = null;
+let expanded      = new Set();
 
 const TNAMES = {
   masters: 'PGA CHAMPIONSHIP',
@@ -829,7 +889,7 @@ function init(data) {
   document.getElementById('load-screen').style.display    = 'none';
   document.getElementById('scoreboard-app').style.display = 'block';
 
-  fetchScores().then(() => { render(); startCD(); });
+  Promise.all([fetchScores(), fetchShotsGained()]).then(() => { render(); startCD(); });
 }
 
 /* ════════════════════════════════════════════════
@@ -935,6 +995,59 @@ function hideBanner() {
 }
 
 /* ════════════════════════════════════════════════
+   FETCH — DataGolf live tournament SG stats
+   Tries direct first; falls back to CORS proxy.
+════════════════════════════════════════════════ */
+async function fetchShotsGained() {
+  const apiKey = snap?.settings?.apiKey;
+  if (!apiKey) return;
+
+  const dgUrl = `https://feeds.datagolf.com/preds/live-tournament-stats?stats=sg_total,sg_ott,sg_app,sg_arg,sg_putt&display=value&key=${apiKey}`;
+  let json = null;
+
+  // Try direct (works if DataGolf ever enables CORS)
+  try {
+    const res = await fetch(dgUrl, { cache: 'no-store' });
+    if (!res.ok) throw new Error(`DG HTTP ${res.status}`);
+    json = await res.json();
+  } catch(e) {
+    console.warn('DataGolf direct blocked, trying proxy:', e.message);
+    // Fallback: CORS proxy
+    try {
+      const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(dgUrl)}`;
+      const res = await fetch(proxyUrl, { cache: 'no-store' });
+      if (!res.ok) throw new Error(`Proxy HTTP ${res.status}`);
+      const wrapper = await res.json();
+      json = JSON.parse(wrapper.contents);
+    } catch(e2) {
+      console.warn('DataGolf proxy also failed:', e2.message);
+      return;
+    }
+  }
+
+  if (!json?.live_stats) return;
+
+  const ns = {};
+  json.live_stats.forEach(p => {
+    const name = normalizeName(p.player_name || '').toLowerCase();
+    if (!name) return;
+    ns[name] = {
+      sg_total: typeof p.sg_total === 'number' ? p.sg_total : null,
+      sg_ott:   typeof p.sg_ott   === 'number' ? p.sg_ott   : null,
+      sg_app:   typeof p.sg_app   === 'number' ? p.sg_app   : null,
+      sg_arg:   typeof p.sg_arg   === 'number' ? p.sg_arg   : null,
+      sg_putt:  typeof p.sg_putt  === 'number' ? p.sg_putt  : null,
+    };
+  });
+
+  if (Object.keys(ns).length) {
+    sgData = ns;
+    document.getElementById('sg-toggle-bar').style.display = 'flex';
+    console.log(`DataGolf: loaded SG data for ${Object.keys(ns).length} players`);
+  }
+}
+
+/* ════════════════════════════════════════════════
    RENDER
 ════════════════════════════════════════════════ */
 function render() {
@@ -950,9 +1063,15 @@ function render() {
       // PGA cuts after R2, so 2 rounds missed = +20 total
       const isMC = pos && /^(mc|wd|dq|cut)/i.test(String(pos).trim());
       const score = isMC ? 20 : (lv?.score ?? null);
+      const sg = getSG(p.name);
       return { name:p.name, dg_rank:p.dg_rank, tier:p.tier,
                score, today:lv?.today??null,
-               thru:lv?.thru??null, pos, isMC };
+               thru:lv?.thru??null, pos, isMC,
+               sg_total: sg?.sg_total ?? null,
+               sg_ott:   sg?.sg_ott   ?? null,
+               sg_app:   sg?.sg_app   ?? null,
+               sg_arg:   sg?.sg_arg   ?? null,
+               sg_putt:  sg?.sg_putt  ?? null };
     });
     // sort by score asc, nulls last
     const sorted = [...ps].sort((a,b) => {
@@ -1040,10 +1159,13 @@ function render() {
 }
 
 function buildTable(team, N) {
-  // counting rows first, then the rest (both sorted by score)
   const crows = team.sorted.filter(p=>team.cset.has(p.name));
   const orows = team.sorted.filter(p=>!team.cset.has(p.name));
   const rows  = [...crows, ...orows];
+
+  const SG_COLS   = ['sg_total','sg_ott','sg_app','sg_arg','sg_putt'];
+  const SG_LABELS = { sg_total:'SG Tot', sg_ott:'OTT', sg_app:'APP', sg_arg:'ARG', sg_putt:'PUTT' };
+  const activeSG  = SG_COLS.filter(c => visibleSGCols.has(c));
 
   let html = `<table class="player-table">
     <thead><tr>
@@ -1052,6 +1174,7 @@ function buildTable(team, N) {
       <th class="r">Today</th>
       <th class="r hide-xs">Thru</th>
       <th class="r">Pos</th>
+      ${activeSG.map(c=>`<th class="r sg-col">${SG_LABELS[c]}</th>`).join('')}
     </tr></thead><tbody>`;
 
   rows.forEach(p => {
@@ -1062,6 +1185,13 @@ function buildTable(team, N) {
     const pos = p.pos||'—';
     const sc  = p.score===null?'none':p.score<0?'under':p.score>0?'over':'even';
     const tc  = p.today===null?'none':p.today<0?'under':p.today>0?'over':'even';
+
+    const sgCells = activeSG.map(c => {
+      const v = p[c];
+      if (v === null) return `<td class="sg-val sg-zero">—</td>`;
+      const cls = v > 0.1 ? 'sg-pos' : v < -0.1 ? 'sg-neg' : 'sg-zero';
+      return `<td class="sg-val ${cls}">${v >= 0 ? '+' : ''}${v.toFixed(2)}</td>`;
+    }).join('');
 
     html += `<tr class="${ic?'counting-row':''}">
       <td>
@@ -1077,6 +1207,7 @@ function buildTable(team, N) {
       <td class="t ${tc}">${ts}</td>
       <td class="thru-col hide-xs">${thr}</td>
       <td class="pos-col">${pos}</td>
+      ${sgCells}
     </tr>`;
   });
 
@@ -1132,6 +1263,24 @@ function getScore(raw) {
   return null;
 }
 
+function getSG(raw) {
+  const key = normalizeName(raw).toLowerCase();
+  if (sgData[key]) return sgData[key];
+  // Surname fallback (e.g. draft "Scheffler, Scottie" → sur "scheffler")
+  const sur = normalizeName(raw.split(',')[0]).toLowerCase().trim();
+  for (const [k, v] of Object.entries(sgData)) {
+    if (k.endsWith(' ' + sur)) return v;
+  }
+  return null;
+}
+
+function toggleSGCol(col) {
+  if (visibleSGCols.has(col)) visibleSGCols.delete(col);
+  else visibleSGCols.add(col);
+  document.getElementById('btn-' + col).classList.toggle('active');
+  render();
+}
+
 function toggle(ti, card) {
   if (expanded.has(ti)) { expanded.delete(ti); card.classList.remove('expanded'); }
   else                  { expanded.add(ti);    card.classList.add('expanded');    }
@@ -1159,7 +1308,7 @@ async function doRefresh() {
   document.getElementById('refresh-bar').style.width = '0%';
   const btn = document.getElementById('btn-refresh');
   btn.disabled = true; btn.textContent = '↻ …';
-  await fetchScores();
+  await Promise.all([fetchScores(), fetchShotsGained()]);
   render();
   btn.disabled = false; btn.textContent = '↻ Refresh';
   toast('Scores updated');
