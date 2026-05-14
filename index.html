@@ -741,7 +741,7 @@ body {
     </div>
 
     <div class="no-scores-banner" id="no-scores-banner" style="display:none">
-      ⚠&nbsp; No live scores yet — fetching from DataGolf…
+      ⚠&nbsp; No live scores yet — fetching from ESPN…
     </div>
 
     <div class="col-header-bar">
@@ -756,7 +756,7 @@ body {
     <div class="teams-container" id="teams-container"></div>
 
     <div class="sb-footer">
-      <div class="footer-left">PGA Championship 2026 · Draft Scoreboard · DataGolf</div>
+      <div class="footer-left">PGA Championship 2026 · Draft Scoreboard · ESPN Live Data</div>
       <div class="footer-right">Next refresh: <span class="cnt" id="countdown">60s</span></div>
     </div>
 
@@ -845,15 +845,23 @@ function normalizeName(raw) {
     const [last, first] = raw.split(',').map(s => s.trim());
     raw = `${first} ${last}`;
   }
-  // Strip accents: NFD decompose then remove combining marks
-  return raw.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  // Explicitly replace Scandinavian and other non-decomposable chars FIRST
+  const map = {
+    'ø':'o','Ø':'O','å':'a','Å':'A','æ':'ae','Æ':'AE',
+    'ð':'d','Ð':'D','þ':'th','Þ':'TH','ß':'ss',
+    'ł':'l','Ł':'L','ñ':'n','Ñ':'N','ã':'a','Ã':'A',
+    'õ':'o','Õ':'O'
+  };
+  raw = raw.replace(/[øØåÅæÆðÐþÞßłŁñÑãÃõÕ]/g, c => map[c] || c);
+  // Then NFD decompose to catch remaining accents (é→e, ü→u, etc.)
+  return raw.normalize('NFD').replace(/[̀-ͯ]/g, '');
 }
 
 async function fetchScores() {
   showLoad('Fetching live scores…');
   try {
-    // ESPN leaderboard endpoint — tournament-specific ID for 2026 PGA Championship
-    const url = 'https://site.api.espn.com/apis/site/v2/sports/golf/pga/leaderboard?tournamentId=401811947';
+    // ESPN scoreboard API — public, no key required
+    const url = 'https://site.api.espn.com/apis/site/v2/sports/golf/pga/scoreboard';
     const res = await fetch(url, { cache: 'no-store' });
     if (!res.ok) throw new Error(`ESPN HTTP ${res.status}`);
     const json = await res.json();
@@ -862,57 +870,52 @@ async function fetchScores() {
       if (v == null) return null;
       const s = String(v).trim();
       if (s === 'E') return 0;
-      if (s === '' || s === '-') return null;
+      if (s === '' || s === '--' || s === '-') return null;
       const n = parseInt(s, 10);
       return isNaN(n) ? null : n;
     };
 
     const ns = {};
 
-    // Primary: leaderboard.rows format
-    const rows = json.leaderboard?.rows || json.leaderboard || [];
-    if (rows.length) {
-      rows.forEach(p => {
-        const rawName = p.athlete?.displayName || p.displayName || p.name || '';
-        if (!rawName) return;
-        const name = normalizeName(rawName);
-        ns[name] = {
-          score: parseScore(p.total   ?? p.score ?? p.scoreToPar),
-          today: parseScore(p.today   ?? p.roundScore ?? p.todayScore),
-          thru:  p.thru   ?? p.holesCompleted ?? p.holesPlayed ?? null,
-          pos:   p.pos    ?? p.position?.displayName ?? p.displayPosition ?? null
-        };
-      });
-    }
+    (json.events || []).forEach(ev => {
+      // Update round label from event status
+      try {
+        const desc = ev.status?.type?.description || ev.status?.type?.name || '';
+        if (desc) document.getElementById('round-label').textContent = desc;
+      } catch {}
 
-    // Fallback: events → competitions → competitors format
-    if (Object.keys(ns).length === 0) {
-      (json.events || []).forEach(ev => {
-        (ev.competitions || []).forEach(comp => {
-          (comp.competitors || []).forEach(c => {
-            const rawName = c.athlete?.displayName || c.athlete?.fullName || '';
-            if (!rawName) return;
-            const name = normalizeName(rawName);
-            const linescores = c.linescores || [];
-            const currentRound = linescores[linescores.length - 1];
-            ns[name] = {
-              score: parseScore(c.score ?? c.total),
-              today: parseScore(currentRound?.value ?? currentRound?.displayValue),
-              thru:  c.status?.thru ?? c.thru ?? null,
-              pos:   c.status?.position?.displayName ?? c.position ?? null
-            };
-          });
+      (ev.competitions || []).forEach(comp => {
+        (comp.competitors || []).forEach(c => {
+          const rawName = c.athlete?.displayName || c.athlete?.fullName || '';
+          if (!rawName) return;
+          const name = normalizeName(rawName);
+
+          // Score: c.score (total to par)
+          const scoreRaw = c.score ?? null;
+
+          // Today + thru: read from linescores array
+          // ESPN structure: c.linescores = [{period:1, displayValue:"-3", linescores:[...18 hole entries]}, {period:2}]
+          // Current active round = first entry that has nested linescores
+          const rounds = c.linescores || [];
+          const activeRound = rounds.find(l => l.linescores && l.linescores.length > 0);
+          const todayRaw = activeRound?.displayValue ?? null;
+          const holesPlayed = activeRound?.linescores?.length ?? null;
+          const thruRaw = holesPlayed === 18 ? 'F' : holesPlayed;
+
+          // Position: derive from sort order (ESPN doesn't put pos in competitor obj)
+          const pos = c.order ? String(c.order) : null;
+
+          // Normalize the key on ingest so accented chars are stripped
+          const normKey = normalizeName(name);
+          ns[normKey] = {
+            score: parseScore(scoreRaw),
+            today: parseScore(todayRaw),
+            thru:  thruRaw,
+            pos
+          };
         });
       });
-    }
-
-    // Update round label from ESPN status
-    try {
-      const status = json.leaderboard?.tournamentStatus
-                  || json.events?.[0]?.status?.type?.description
-                  || null;
-      if (status) document.getElementById('round-label').textContent = status;
-    } catch {}
+    });
 
     if (Object.keys(ns).length) { liveScores = ns; hideBanner(); }
     else throw new Error('No players found in ESPN response');
