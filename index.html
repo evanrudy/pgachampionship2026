@@ -1,0 +1,1197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>PGA Championship 2026 — Draft Scoreboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@300;400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ─────────────────────────────────────────────────────────────
+   PGA CHAMPIONSHIP COLOR PALETTE
+   Deep Navy    #0D2545  → primary header / nav
+   Mid Navy     #1A3D6B  → accent / table headers
+   Steel Blue   #4A9FD4  → highlight / counting rows
+   Wanamaker Silver #E8EDF4 → page background
+   Light Steel  #EEF3FA  → card bg
+   Slate        #8099B8  → muted borders / text
+   ───────────────────────────────────────────────────────────── */
+:root {
+  --billiard:       #0D2545;
+  --billiard-dark:  #081830;
+  --billiard-mid:   #1A3D6B;
+  --grassy:         #2E7DB8;
+  --highlighter:    #4A9FD4;
+  --whisper:        #F4F6F9;
+  --white-sand:     #EEF3FA;
+  --sandpit:        #8099B8;
+  --sandpit-lt:     #a0b4cc;
+  --white:          #FFFFFF;
+  --text-dark:      #0f1a2e;
+  --text-mid:       #2a3a52;
+  --text-dim:       #5a6e88;
+  --text-muted:     #8099B8;
+  --red:            #C0392B;
+  --border:         #c8d4e4;
+  --border-lt:      #dde6f0;
+  --counting-bg:    #e6f2fb;
+  --shadow-sm:      0 1px 4px rgba(13,37,69,0.10);
+  --shadow-md:      0 3px 18px rgba(13,37,69,0.15);
+  --font-serif:     'Playfair Display', Georgia, serif;
+  --font-sans:      'IBM Plex Sans', system-ui, sans-serif;
+  --font-mono:      'IBM Plex Mono', 'Courier New', monospace;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 15px; }
+body {
+  font-family: var(--font-sans);
+  background: var(--whisper);
+  color: var(--text-dark);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ══════════════════════════════════════════════════════════
+   LOAD SCREEN
+══════════════════════════════════════════════════════════ */
+#load-screen {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 20px;
+  background: var(--billiard);
+}
+
+.load-hero { text-align: center; margin-bottom: 36px; }
+
+.load-flag {
+  width: 52px; height: 52px;
+  margin: 0 auto 18px;
+}
+
+.load-hero h1 {
+  font-family: var(--font-serif);
+  font-size: 2.3rem;
+  font-weight: 700;
+  color: var(--white);
+  letter-spacing: 0.06em;
+  line-height: 1.15;
+  margin-bottom: 8px;
+}
+
+.load-year {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.18em;
+  color: rgba(232,212,77,0.8);
+  text-transform: uppercase;
+}
+
+.drop-zone {
+  width: 100%;
+  max-width: 400px;
+  border: 2px dashed rgba(232,212,77,0.45);
+  border-radius: 10px;
+  padding: 40px 28px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: rgba(255,255,255,0.06);
+}
+.drop-zone:hover, .drop-zone.drag-over {
+  background: rgba(255,255,255,0.1);
+  border-color: var(--highlighter);
+  border-style: solid;
+}
+
+.drop-icon { font-size: 2.8rem; margin-bottom: 12px; }
+.drop-title {
+  font-family: var(--font-serif);
+  font-size: 1.1rem;
+  color: var(--white);
+  margin-bottom: 6px;
+}
+.drop-sub {
+  font-family: var(--font-mono);
+  font-size: 0.64rem;
+  color: rgba(255,255,255,0.45);
+  letter-spacing: 0.05em;
+  margin-bottom: 18px;
+}
+.drop-or {
+  position: relative;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  color: rgba(255,255,255,0.3);
+  letter-spacing: 0.1em;
+  margin: 14px 0;
+}
+.drop-or::before, .drop-or::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: 38%;
+  height: 1px;
+  background: rgba(255,255,255,0.14);
+}
+.drop-or::before { left: 0; }
+.drop-or::after  { right: 0; }
+
+.browse-btn {
+  background: var(--highlighter);
+  color: var(--billiard-dark);
+  border: none;
+  border-radius: 4px;
+  padding: 11px 28px;
+  font-family: var(--font-serif);
+  font-size: 0.92rem;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 0.04em;
+  transition: all 0.18s;
+}
+.browse-btn:hover { background: #f0de5a; transform: translateY(-1px); }
+
+#file-input { display: none; }
+
+/* ══════════════════════════════════════════════════════════
+   SCOREBOARD: HEADER
+══════════════════════════════════════════════════════════ */
+#scoreboard-app { display: none; }
+
+.site-header {
+  background: var(--billiard);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.22);
+}
+
+.header-main {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 11px 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.hdr-flag { width: 26px; height: 26px; flex-shrink: 0; }
+
+.brand-name {
+  font-family: var(--font-serif);
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--white);
+  letter-spacing: 0.06em;
+  line-height: 1.1;
+}
+.brand-sub {
+  font-family: var(--font-mono);
+  font-size: 0.56rem;
+  letter-spacing: 0.14em;
+  color: rgba(232,212,77,0.75);
+  text-transform: uppercase;
+  margin-top: 2px;
+}
+
+.header-btns { display: flex; align-items: center; gap: 7px; }
+
+.btn-refresh {
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.2);
+  color: var(--white);
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  padding: 6px 12px;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: background 0.14s;
+}
+.btn-refresh:hover    { background: rgba(255,255,255,0.18); }
+.btn-refresh:disabled { opacity: 0.45; pointer-events: none; }
+
+.btn-new {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.18);
+  color: rgba(255,255,255,0.55);
+  font-family: var(--font-mono);
+  font-size: 0.56rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 6px 10px;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: all 0.14s;
+}
+.btn-new:hover { color: var(--white); border-color: rgba(255,255,255,0.4); }
+
+.header-status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 5px 16px;
+  background: var(--billiard-dark);
+}
+
+.status-live {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.06em;
+  color: rgba(255,255,255,0.5);
+}
+.live-dot {
+  width: 6px; height: 6px;
+  background: #4ade80;
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+@keyframes pulse {
+  0%,100% { opacity: 1; transform: scale(1); }
+  50%     { opacity: 0.3; transform: scale(0.7); }
+}
+
+.status-updated {
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  color: rgba(255,255,255,0.35);
+}
+
+/* ══════════════════════════════════════════════════════════
+   ROUND BAR
+══════════════════════════════════════════════════════════ */
+.round-bar {
+  background: var(--white);
+  border-bottom: 2px solid var(--border);
+  padding: 8px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.round-label {
+  font-family: var(--font-serif);
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--billiard);
+}
+.course-label {
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--text-muted);
+}
+
+/* ══════════════════════════════════════════════════════════
+   COLUMN HEADER BAR
+══════════════════════════════════════════════════════════ */
+.col-header-bar {
+  background: var(--billiard);
+  display: grid;
+  grid-template-columns: 50px 1fr 58px 58px 50px 50px;
+  padding: 6px 12px 6px 10px;
+  gap: 4px;
+}
+.col-header-bar span {
+  font-family: var(--font-mono);
+  font-size: 0.55rem;
+  font-weight: 500;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.55);
+}
+.col-header-bar .r { text-align: right; }
+.col-header-bar .c { text-align: center; }
+
+/* ══════════════════════════════════════════════════════════
+   MAIN WRAP
+══════════════════════════════════════════════════════════ */
+.main-wrap {
+  max-width: 700px;
+  margin: 0 auto;
+  padding-bottom: 48px;
+}
+
+/* ══════════════════════════════════════════════════════════
+   NO SCORES BANNER
+══════════════════════════════════════════════════════════ */
+.no-scores-banner {
+  margin: 10px 10px 0;
+  background: #fffbea;
+  border: 1px solid #d4b840;
+  border-radius: 4px;
+  padding: 10px 14px;
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  color: #7a6010;
+  letter-spacing: 0.04em;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ══════════════════════════════════════════════════════════
+   TEAM CARDS
+══════════════════════════════════════════════════════════ */
+.teams-container {
+  padding: 10px 10px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.team-card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow 0.2s;
+}
+.team-card:hover { box-shadow: var(--shadow-md); }
+
+/* rank stripe on left */
+.team-card.rank-1 { border-left: 4px solid #4A9FD4; }
+.team-card.rank-2 { border-left: 4px solid var(--sandpit-lt); }
+.team-card.rank-3 { border-left: 4px solid #c4a06a; }
+.team-card.rank-4,
+.team-card.rank-5,
+.team-card.rank-6,
+.team-card.rank-7,
+.team-card.rank-8 { border-left: 4px solid var(--border); }
+
+/* ── Team header row ── */
+.team-header {
+  display: grid;
+  grid-template-columns: 50px 1fr 60px 62px 50px;
+  align-items: center;
+  padding: 11px 12px 11px 8px;
+  gap: 5px;
+  cursor: pointer;
+  user-select: none;
+  background: var(--white);
+  border-bottom: 1px solid var(--border-lt);
+  transition: background 0.12s;
+}
+.team-header:hover { background: #fafaf6; }
+
+.th-pos { text-align: center; }
+.th-pos-num {
+  font-family: var(--font-serif);
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--billiard);
+  display: block;
+  line-height: 1;
+}
+.th-pos-sfx {
+  font-family: var(--font-mono);
+  font-size: 0.48rem;
+  color: var(--text-muted);
+  letter-spacing: 0.05em;
+  display: block;
+}
+.th-pos.t .th-pos-num {
+  font-size: 0.95rem;
+  color: var(--text-dim);
+}
+
+.th-info {}
+.th-name {
+  font-family: var(--font-serif);
+  font-size: 0.98rem;
+  font-weight: 700;
+  color: var(--text-dark);
+  line-height: 1.2;
+}
+.th-sub {
+  font-family: var(--font-mono);
+  font-size: 0.56rem;
+  color: var(--text-muted);
+  margin-top: 3px;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
+}
+
+.th-total { text-align: right; }
+.th-score {
+  font-family: var(--font-mono);
+  font-size: 1.25rem;
+  font-weight: 500;
+  display: block;
+  line-height: 1;
+}
+.th-score.under { color: var(--red); }
+.th-score.over  { color: var(--text-dark); }
+.th-score.even  { color: var(--text-dark); }
+.th-score.none  { color: var(--text-muted); }
+
+.th-label {
+  font-family: var(--font-mono);
+  font-size: 0.5rem;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  display: block;
+  margin-top: 2px;
+  text-align: right;
+}
+
+.th-gap {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  text-align: right;
+}
+
+.th-chevron {
+  font-size: 0.6rem;
+  color: var(--text-muted);
+  text-align: center;
+  transition: transform 0.24s;
+}
+.team-card.expanded .th-chevron { transform: rotate(180deg); }
+
+/* ── Expanded player table ── */
+.picks-wrap { display: none; }
+.team-card.expanded .picks-wrap { display: block; }
+
+.player-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.player-table thead tr { background: var(--billiard); }
+.player-table thead th {
+  font-family: var(--font-mono);
+  font-size: 0.54rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.6);
+  padding: 6px 10px;
+  text-align: left;
+  white-space: nowrap;
+}
+.player-table thead th.r { text-align: right; }
+
+.player-table tbody tr {
+  border-bottom: 1px solid var(--border-lt);
+  transition: background 0.1s;
+}
+.player-table tbody tr:last-child { border-bottom: none; }
+.player-table tbody tr:hover { background: #f8f8f2; }
+.player-table tbody tr.counting-row { background: var(--counting-bg); }
+.player-table tbody tr.counting-row:hover { background: #d8edf8; }
+
+.player-table tbody td {
+  padding: 9px 10px;
+  font-size: 0.78rem;
+  vertical-align: middle;
+}
+
+.pcol {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.pip-on  { width: 7px; height: 7px; background: var(--grassy); border-radius: 50%; flex-shrink: 0; }
+.pip-off { width: 7px; height: 7px; flex-shrink: 0; }
+
+.p-name {
+  font-family: var(--font-sans);
+  font-size: 0.77rem;
+  font-weight: 600;
+  color: var(--text-dark);
+  display: block;
+  max-width: 155px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.p-meta {
+  font-family: var(--font-mono);
+  font-size: 0.52rem;
+  color: var(--text-muted);
+  display: block;
+  margin-top: 1px;
+}
+
+.ctag {
+  background: var(--grassy);
+  color: var(--white);
+  font-family: var(--font-mono);
+  font-size: 0.48rem;
+  letter-spacing: 0.05em;
+  padding: 2px 4px;
+  border-radius: 2px;
+  margin-left: 4px;
+  vertical-align: middle;
+}
+
+.s { font-family: var(--font-mono); font-size: 0.84rem; font-weight: 500; text-align: right; white-space: nowrap; }
+.s.under { color: var(--red); }
+.s.over  { color: var(--text-dark); }
+.s.even  { color: var(--text-dark); }
+.s.none  { color: var(--text-muted); }
+
+.t { font-family: var(--font-mono); font-size: 0.72rem; text-align: right; white-space: nowrap; }
+.t.under { color: var(--red); }
+.t.over  { color: var(--text-mid); }
+.t.even  { color: var(--text-mid); }
+.t.none  { color: var(--text-muted); }
+
+.thru-col { font-family: var(--font-mono); font-size: 0.68rem; color: var(--text-dim); text-align: right; white-space: nowrap; }
+.pos-col  { font-family: var(--font-mono); font-size: 0.68rem; color: var(--text-dim); text-align: right; white-space: nowrap; }
+
+/* ══════════════════════════════════════════════════════════
+   FOOTER
+══════════════════════════════════════════════════════════ */
+.sb-footer {
+  background: var(--billiard-dark);
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 24px;
+}
+.footer-left {
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.06em;
+  color: rgba(255,255,255,0.3);
+}
+.footer-right {
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  color: rgba(255,255,255,0.38);
+}
+.footer-right .cnt { color: var(--highlighter); font-weight: 500; }
+
+/* ══════════════════════════════════════════════════════════
+   OVERLAYS / UTILITY
+══════════════════════════════════════════════════════════ */
+.loading-overlay {
+  position: fixed; inset: 0;
+  background: rgba(20,68,48,0.72);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  z-index: 500;
+  backdrop-filter: blur(2px);
+}
+.loading-overlay.show { display: flex; }
+.spinner {
+  width: 40px; height: 40px;
+  border: 3px solid rgba(255,255,255,0.2);
+  border-top-color: var(--highlighter);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  margin-bottom: 14px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-text {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  color: rgba(255,255,255,0.8);
+  text-transform: uppercase;
+}
+
+.toast {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%) translateY(56px);
+  background: var(--billiard);
+  color: var(--white);
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  padding: 10px 22px;
+  border-radius: 20px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.28);
+  z-index: 600;
+  opacity: 0;
+  transition: all 0.28s;
+  white-space: nowrap;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.toast.err  { background: var(--red); }
+
+.refresh-bar {
+  position: fixed; top: 0; left: 0;
+  height: 2px;
+  background: var(--highlighter);
+  transition: width 1s linear;
+  z-index: 999;
+  opacity: 0.9;
+  width: 0%;
+}
+
+/* xs tweak */
+@media (max-width: 400px) {
+  .p-name { max-width: 115px; }
+  .hide-xs { display: none; }
+}
+.player-table tbody tr.mc-row { background: #f4f6f9; opacity: 0.72; }
+.player-table tbody tr.mc-row:hover { background: #eaeff6; opacity: 1; }
+.player-table tbody tr.mc-row td { color: var(--text-muted); }
+.player-table tbody tr.mc-row .s { color: #b87a5a; }
+
+.mc-tag {
+  background: #dde6f0;
+  color: var(--text-dim);
+  font-family: var(--font-mono);
+  font-size: 0.48rem;
+  letter-spacing: 0.05em;
+  padding: 2px 4px;
+  border-radius: 2px;
+  margin-left: 4px;
+  vertical-align: middle;
+}
+</style>
+</head>
+<body>
+
+<div class="loading-overlay" id="loading-overlay">
+  <div class="spinner"></div>
+  <div class="loading-text" id="loading-text">Fetching scores…</div>
+</div>
+<div class="toast" id="toast"></div>
+<div class="refresh-bar" id="refresh-bar"></div>
+<input type="file" id="file-input" accept=".json">
+
+<!-- ══════════════════════════════════════════════════════
+     LOAD SCREEN
+════════════════════════════════════════════════════════ -->
+<div id="load-screen">
+  <div class="load-hero">
+    <svg class="load-flag" viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="10" y="4" width="2.5" height="44" rx="1.25" fill="rgba(255,255,255,0.65)"/>
+      <path d="M12.5 6 L40 13.5 L12.5 21 Z" fill="#4A9FD4"/>
+    </svg>
+    <h1>PGA Championship</h1>
+    <div class="load-year">2026 · Draft Scoreboard · Aronimink GC</div>
+  </div>
+  <div class="drop-zone" id="drop-zone">
+    <div class="drop-icon">⛳</div>
+    <div class="drop-title">Load Your Draft File</div>
+    <div class="drop-sub">Drag &amp; drop the draft JSON here</div>
+    <div class="drop-or">or</div>
+    <button class="browse-btn" onclick="document.getElementById('file-input').click()">Browse Files</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     SCOREBOARD
+════════════════════════════════════════════════════════ -->
+<div id="scoreboard-app">
+
+  <header class="site-header">
+    <div class="header-main">
+      <div class="header-brand">
+        <svg class="hdr-flag" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="5" y="2" width="2" height="22" rx="1" fill="rgba(255,255,255,0.65)"/>
+          <path d="M7 3 L21 7.5 L7 12 Z" fill="#4A9FD4"/>
+        </svg>
+        <div>
+          <div class="brand-name" id="hdr-name">THE MASTERS</div>
+          <div class="brand-sub" id="hdr-sub">Aronimink GC · 2026 · Draft Scoreboard</div>
+        </div>
+      </div>
+      <div class="header-btns">
+        <button class="btn-refresh" id="btn-refresh" onclick="doRefresh()">↻ Refresh</button>
+        <button class="btn-new"     onclick="loadNew()">New Draft</button>
+      </div>
+    </div>
+    <div class="header-status">
+      <div class="status-live">
+        <span class="live-dot"></span>
+        <span id="status-txt">Auto-refreshing every 60 seconds</span>
+      </div>
+      <div class="status-updated" id="status-updated">—</div>
+    </div>
+  </header>
+
+  <div class="main-wrap">
+
+    <div class="round-bar">
+      <div class="round-label"  id="round-label">Live Scoring</div>
+      <div class="course-label">Aronimink Golf Club · Newtown Square, PA</div>
+    </div>
+
+    <div class="no-scores-banner" id="no-scores-banner" style="display:none">
+      ⚠&nbsp; No live scores yet — fetching from ESPN…
+    </div>
+
+    <div class="col-header-bar">
+      <span class="c">POS</span>
+      <span>PLAYER</span>
+      <span class="r">TOTAL</span>
+      <span class="r">TODAY</span>
+      <span class="r hide-xs">THRU</span>
+      <span class="r">POS</span>
+    </div>
+
+    <div class="teams-container" id="teams-container"></div>
+
+    <div class="sb-footer">
+      <div class="footer-left">PGA Championship 2026 · Draft Scoreboard · ESPN Live Data</div>
+      <div class="footer-right">Next refresh: <span class="cnt" id="countdown">60s</span></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+/* ════════════════════════════════════════════════
+   STATE
+════════════════════════════════════════════════ */
+let snap         = null;
+let liveScores   = {};
+let cval         = 60;
+let ctick        = null;
+let expanded     = new Set();
+
+const TNAMES = {
+  masters: 'PGA CHAMPIONSHIP',
+  pga:     'PGA CHAMPIONSHIP',
+  usopen:  'U.S. OPEN',
+  theopen: 'THE OPEN CHAMPIONSHIP'
+};
+const TSUBS = {
+  masters: 'Aronimink GC · 2026 · Draft Scoreboard',
+  pga:     'Aronimink GC · Newtown Square, PA · 2026',
+  usopen:  'Oakmont C.C. · 2026 · Draft Scoreboard',
+  theopen: 'Royal Portrush · 2026 · Draft Scoreboard'
+};
+
+/* ════════════════════════════════════════════════
+   FILE HANDLING
+════════════════════════════════════════════════ */
+const dz = document.getElementById('drop-zone');
+dz.addEventListener('dragover',  e => { e.preventDefault(); dz.classList.add('drag-over'); });
+dz.addEventListener('dragleave', ()  => dz.classList.remove('drag-over'));
+dz.addEventListener('drop',      e  => {
+  e.preventDefault(); dz.classList.remove('drag-over');
+  if (e.dataTransfer.files[0]) readFile(e.dataTransfer.files[0]);
+});
+document.getElementById('file-input').addEventListener('change', function() {
+  if (this.files.length) readFile(this.files[0]);
+  this.value = '';
+});
+
+function readFile(f) {
+  const r = new FileReader();
+  r.onload = e => {
+    try { init(JSON.parse(e.target.result)); }
+    catch { toast('Invalid JSON file.', true); }
+  };
+  r.readAsText(f);
+}
+function loadNew() { document.getElementById('file-input').click(); }
+
+/* ════════════════════════════════════════════════
+   INIT
+════════════════════════════════════════════════ */
+function init(data) {
+  snap       = data;
+  liveScores = data.liveScores || {};
+
+  const tid = snap.tournamentId || snap.settings?.tournamentId || 'pga';
+  document.getElementById('hdr-name').textContent = TNAMES[tid] || 'PGA CHAMPIONSHIP';
+  document.getElementById('hdr-sub').textContent  = TSUBS[tid]  || TSUBS.masters;
+  document.title = (TNAMES[tid] || 'Masters') + ' 2026 — Draft Scoreboard';
+
+  document.getElementById('no-scores-banner').style.display =
+    Object.keys(liveScores).length ? 'none' : 'flex';
+
+  document.getElementById('load-screen').style.display    = 'none';
+  document.getElementById('scoreboard-app').style.display = 'block';
+
+  fetchScores().then(() => { render(); startCD(); });
+}
+
+/* ════════════════════════════════════════════════
+   FETCH — Masters.com public feed
+   No API key needed. No CORS issues.
+════════════════════════════════════════════════ */
+
+// Normalize "Last, First" → "First Last" to match draft JSON names
+function normalizeName(raw) {
+  if (!raw) return '';
+  raw = raw.trim();
+  if (raw.includes(',')) {
+    const [last, first] = raw.split(',').map(s => s.trim());
+    raw = `${first} ${last}`;
+  }
+  // Explicitly replace Scandinavian and other non-decomposable chars FIRST
+  const map = {
+    'ø':'o','Ø':'O','å':'a','Å':'A','æ':'ae','Æ':'AE',
+    'ð':'d','Ð':'D','þ':'th','Þ':'TH','ß':'ss',
+    'ł':'l','Ł':'L','ñ':'n','Ñ':'N','ã':'a','Ã':'A',
+    'õ':'o','Õ':'O'
+  };
+  raw = raw.replace(/[øØåÅæÆðÐþÞßłŁñÑãÃõÕ]/g, c => map[c] || c);
+  // Then NFD decompose to catch remaining accents (é→e, ü→u, etc.)
+  return raw.normalize('NFD').replace(/[̀-ͯ]/g, '');
+}
+
+async function fetchScores() {
+  showLoad('Fetching live scores…');
+  try {
+    // ESPN scoreboard API — public, no key required
+    const url = 'https://site.api.espn.com/apis/site/v2/sports/golf/pga/scoreboard';
+    const res = await fetch(url, { cache: 'no-store' });
+    if (!res.ok) throw new Error(`ESPN HTTP ${res.status}`);
+    const json = await res.json();
+
+    const parseScore = v => {
+      if (v == null) return null;
+      const s = String(v).trim();
+      if (s === 'E') return 0;
+      if (s === '' || s === '--' || s === '-') return null;
+      const n = parseInt(s, 10);
+      return isNaN(n) ? null : n;
+    };
+
+    const ns = {};
+
+    (json.events || []).forEach(ev => {
+      // Update round label from event status
+      try {
+        const desc = ev.status?.type?.description || ev.status?.type?.name || '';
+        if (desc) document.getElementById('round-label').textContent = desc;
+      } catch {}
+
+      (ev.competitions || []).forEach(comp => {
+        (comp.competitors || []).forEach(c => {
+          const rawName = c.athlete?.displayName || c.athlete?.fullName || '';
+          if (!rawName) return;
+          const name = normalizeName(rawName);
+
+          // Score: c.score (total to par)
+          const scoreRaw = c.score ?? null;
+
+          // Today + thru: read from linescores array
+          // ESPN structure: c.linescores = [{period:1, displayValue:"-3", linescores:[...18 hole entries]}, {period:2}]
+          // Current active round = first entry that has nested linescores
+          const rounds = c.linescores || [];
+          const activeRound = rounds.find(l => l.linescores && l.linescores.length > 0);
+          const todayRaw = activeRound?.displayValue ?? null;
+          const holesPlayed = activeRound?.linescores?.length ?? null;
+          const thruRaw = holesPlayed === 18 ? 'F' : holesPlayed;
+
+          // Position: derive from sort order (ESPN doesn't put pos in competitor obj)
+          const pos = c.order ? String(c.order) : null;
+
+          // Normalize the key on ingest so accented chars are stripped
+          const normKey = normalizeName(name);
+          ns[normKey] = {
+            score: parseScore(scoreRaw),
+            today: parseScore(todayRaw),
+            thru:  thruRaw,
+            pos
+          };
+        });
+      });
+    });
+
+    if (Object.keys(ns).length) { liveScores = ns; hideBanner(); }
+    else throw new Error('No players found in ESPN response');
+
+  } catch(e) {
+    console.warn('ESPN fetch error:', e.message);
+  } finally {
+    hideLoad();
+    const now = new Date();
+    document.getElementById('status-updated').textContent =
+      'Updated ' + now.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+  }
+}
+
+function hideBanner() {
+  document.getElementById('no-scores-banner').style.display = 'none';
+}
+
+/* ════════════════════════════════════════════════
+   RENDER
+════════════════════════════════════════════════ */
+function render() {
+  if (!snap) return;
+  const { settings, picks } = snap;
+  const N = settings.countingScores;
+
+  const teams = settings.teamNames.map((nm, ti) => {
+    const ps = (picks[ti]||[]).map(p => {
+      const lv  = getScore(p.name);
+      const pos = lv?.pos ?? null;
+      // MC penalty: shoot 80 gross on par 70 = +10 per round
+      // PGA cuts after R2, so 2 rounds missed = +20 total
+      const isMC = pos && /^(mc|wd|dq|cut)/i.test(String(pos).trim());
+      const score = isMC ? 20 : (lv?.score ?? null);
+      return { name:p.name, dg_rank:p.dg_rank, tier:p.tier,
+               score, today:lv?.today??null,
+               thru:lv?.thru??null, pos, isMC };
+    });
+    // sort by score asc, nulls last
+    const sorted = [...ps].sort((a,b) => {
+      if (a.score===null && b.score===null) return 0;
+      if (a.score===null) return 1;
+      if (b.score===null) return -1;
+      return a.score - b.score;
+    });
+    const counting   = sorted.slice(0,N).filter(p=>p.score!==null);
+    const total      = counting.reduce((s,p)=>s+p.score,0);
+    const cset       = new Set(counting.map(p=>p.name));
+    return { nm, ti, sorted, counting, cset, total, has: counting.length>0 };
+  });
+
+  // rank
+  const ranked = [...teams].sort((a,b) => {
+    if (!a.has && !b.has) return 0;
+    if (!a.has) return 1;
+    if (!b.has) return -1;
+    return a.total - b.total;
+  });
+
+  // position labels
+  const labels = ranked.map((t,i) => {
+    if (!t.has) return {l:'—',s:'',tied:false};
+    const prev = i>0 && ranked[i-1].has && ranked[i-1].total===t.total;
+    const next = i<ranked.length-1 && ranked[i+1].has && ranked[i+1].total===t.total;
+    const tied = prev||next;
+    const n    = i+1;
+    const sfx  = n===1?'ST':n===2?'ND':n===3?'RD':'TH';
+    return { l: tied?`T${n}`:`${n}`, s: tied?'':sfx, tied };
+  });
+
+  const leader = ranked.find(t=>t.has);
+
+  const wrap = document.getElementById('teams-container');
+  wrap.innerHTML = '';
+
+  ranked.forEach((team, i) => {
+    const lb    = labels[i];
+    const rank  = i+1;
+    const gap   = (team.has && i>0 && leader) ? team.total - leader.total : null;
+    const ts    = team.has ? fmt(team.total) : '—';
+    const tcls  = !team.has ? 'none' : team.total<0?'under':team.total>0?'over':'even';
+    const gstr  = gap===null?'': gap===0?'—':`+${gap}`;
+    const sub   = team.counting.length>0
+      ? team.counting.map(p=>disp(p.name)).join(', ')
+      : 'No live scores yet';
+
+    const card = document.createElement('div');
+    card.className = `team-card rank-${rank}${expanded.has(team.ti)?' expanded':''}`;
+
+    card.innerHTML = `
+      <div class="team-header" onclick="toggle(${team.ti},this.closest('.team-card'))">
+        <div class="th-pos${lb.tied?' t':''}">
+          <span class="th-pos-num">${lb.l}</span>
+          ${lb.s?`<span class="th-pos-sfx">${lb.s}</span>`:''}
+        </div>
+        <div class="th-info">
+          <div class="th-name">${team.nm}</div>
+          <div class="th-sub">${sub}</div>
+        </div>
+        <div class="th-total">
+          <span class="th-score ${tcls}">${ts}</span>
+          <span class="th-label">Best ${N}</span>
+        </div>
+        <div class="th-gap">${gstr}</div>
+        <div class="th-chevron">▼</div>
+      </div>
+      <div class="picks-wrap">${buildTable(team, N)}</div>
+    `;
+    wrap.appendChild(card);
+  });
+
+  // round label
+  const thrus = Object.values(liveScores).map(p => {
+    if (p.thru==='F'||p.thru===18) return 18;
+    return parseInt(p.thru)||0;
+  });
+  if (thrus.length) {
+    const mx = Math.max(...thrus);
+    document.getElementById('round-label').textContent =
+      mx===18 ? 'Round Complete' : mx>0 ? `In Progress · Thru ${mx}` : 'Round Not Started';
+  }
+}
+
+function buildTable(team, N) {
+  // counting rows first, then the rest (both sorted by score)
+  const crows = team.sorted.filter(p=>team.cset.has(p.name));
+  const orows = team.sorted.filter(p=>!team.cset.has(p.name));
+  const rows  = [...crows, ...orows];
+
+  let html = `<table class="player-table">
+    <thead><tr>
+      <th>Player</th>
+      <th class="r">Total</th>
+      <th class="r">Today</th>
+      <th class="r hide-xs">Thru</th>
+      <th class="r">Pos</th>
+    </tr></thead><tbody>`;
+
+  rows.forEach(p => {
+    const ic  = team.cset.has(p.name);
+    const ss  = p.score===null?'—':fmt(p.score);
+    const ts  = p.today===null?'—':fmt(p.today);
+    const thr = p.thru===null?'—':(p.thru===18||p.thru==='F')?'F':`${p.thru}`;
+    const pos = p.pos||'—';
+    const sc  = p.score===null?'none':p.score<0?'under':p.score>0?'over':'even';
+    const tc  = p.today===null?'none':p.today<0?'under':p.today>0?'over':'even';
+
+    html += `<tr class="${ic?'counting-row':''}">
+      <td>
+        <div class="pcol">
+          ${ic?'<span class="pip-on"></span>':'<span class="pip-off"></span>'}
+          <div>
+            <span class="p-name">${disp(p.name)}${ic?'<span class="ctag">⭑</span>':''}</span>
+            <span class="p-meta">DG #${p.dg_rank} · Tier ${p.tier}</span>
+          </div>
+        </div>
+      </td>
+      <td class="s ${sc}">${ss}</td>
+      <td class="t ${tc}">${ts}</td>
+      <td class="thru-col hide-xs">${thr}</td>
+      <td class="pos-col">${pos}</td>
+    </tr>`;
+  });
+
+  html += '</tbody></table>';
+  return html;
+}
+
+/* ════════════════════════════════════════════════
+   HELPERS
+════════════════════════════════════════════════ */
+function fmt(v) {
+  if (v===null||v===undefined) return '—';
+  if (v===0) return 'E';
+  return v>0?`+${v}`:`${v}`;
+}
+
+function disp(raw) {
+  const p = raw.split(',').map(s=>s.trim());
+  return p.length===2 ? `${p[1]} ${p[0]}` : raw;
+}
+
+function getScore(raw) {
+  // Try exact match first
+  if (liveScores[raw]) return liveScores[raw];
+  // Flip Last, First → First Last and normalize accents
+  const normalized = normalizeName(raw);
+  if (liveScores[normalized]) return liveScores[normalized];
+  // Also try normalized against normalized keys
+  const normLower = normalized.toLowerCase();
+  for (const [k,v] of Object.entries(liveScores)) {
+    if (normalizeName(k).toLowerCase() === normLower) return v;
+  }
+  // Surname fallback — handles "Hojgaard" matching "Nicolai Hojgaard"
+  const sur = normalizeName(raw.split(',')[0]).toLowerCase().trim();
+  for (const [k,v] of Object.entries(liveScores)) {
+    const kn = normalizeName(k).toLowerCase();
+    if (kn.endsWith(' ' + sur) || kn.startsWith(sur + ' ')) return v;
+  }
+  // Initial+surname fallback — handles ESPN "N. Hojgaard" vs draft "Nicolai Hojgaard"
+  const parts = normalized.split(' ');
+  if (parts.length >= 2) {
+    const initial = parts[0][0].toLowerCase();
+    const surname = parts[parts.length - 1].toLowerCase();
+    for (const [k,v] of Object.entries(liveScores)) {
+      const kp = normalizeName(k).toLowerCase().split(' ');
+      if (kp.length >= 2) {
+        const kInitial = kp[0].replace('.','')[0];
+        const kSurname = kp[kp.length - 1];
+        if (kInitial === initial && kSurname === surname) return v;
+      }
+    }
+  }
+  return null;
+}
+
+function toggle(ti, card) {
+  if (expanded.has(ti)) { expanded.delete(ti); card.classList.remove('expanded'); }
+  else                  { expanded.add(ti);    card.classList.add('expanded');    }
+}
+
+/* ════════════════════════════════════════════════
+   COUNTDOWN / AUTO-REFRESH
+════════════════════════════════════════════════ */
+function startCD() {
+  clearInterval(ctick);
+  cval = 60;
+  setCD();
+  ctick = setInterval(() => {
+    cval--;
+    setCD();
+    document.getElementById('refresh-bar').style.width = ((60-cval)/60*100)+'%';
+    if (cval<=0) doRefresh();
+  }, 1000);
+}
+
+function setCD() { document.getElementById('countdown').textContent = cval+'s'; }
+
+async function doRefresh() {
+  cval = 60; setCD();
+  document.getElementById('refresh-bar').style.width = '0%';
+  const btn = document.getElementById('btn-refresh');
+  btn.disabled = true; btn.textContent = '↻ …';
+  await fetchScores();
+  render();
+  btn.disabled = false; btn.textContent = '↻ Refresh';
+  toast('Scores updated');
+}
+
+/* ════════════════════════════════════════════════
+   UI UTILITIES
+════════════════════════════════════════════════ */
+function showLoad(msg) {
+  document.getElementById('loading-text').textContent = msg;
+  document.getElementById('loading-overlay').classList.add('show');
+}
+function hideLoad() { document.getElementById('loading-overlay').classList.remove('show'); }
+
+let _tt;
+function toast(msg, err=false) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'toast show' + (err?' err':'');
+  clearTimeout(_tt);
+  _tt = setTimeout(()=>el.classList.remove('show'), 2800);
+}
+
+/* ════════════════════════════════════════════════
+   AUTO-INIT: PGA Championship 2026 draft baked in
+════════════════════════════════════════════════ */
+(function() {
+  const DRAFT_DATA = {"version":2,"label":"PGA CHAMPIONSHIP \u2014 Strachan, Brady, Brennan, Rudy","savedAt":"2026-05-14T03:23:04.476Z","tournamentId":"pga","settings":{"numTeams":4,"picksPerTeam":8,"countingScores":4,"teamNames":["Strachan","Brady","Brennan","Rudy"],"apiKey":"3de9043b5935997b753d851644aa","tournamentId":"pga"},"picks":[[{"name":"Scheffler, Scottie","dg_id":18417,"dg_rank":1,"tier":1,"win_pct":13.8,"top5_pct":41.9,"top10_pct":57,"mc_pct":91.9,"sg_total":0,"dg_edge":null,"composite":93,"_nWin":100,"_nT10":100,"_nMC":100,"_nEdge":50},{"name":"Koepka, Brooks","dg_id":16243,"dg_rank":25,"tier":2,"win_pct":1,"top5_pct":7.1,"top10_pct":13.8,"mc_pct":68.7,"sg_total":0,"dg_edge":null,"composite":35,"_nWin":7,"_nT10":24,"_nMC":75,"_nEdge":50},{"name":"Fleetwood, Tommy","dg_id":12294,"dg_rank":9,"tier":1,"win_pct":2.2,"top5_pct":12.7,"top10_pct":23.2,"mc_pct":78.6,"sg_total":0,"dg_edge":null,"composite":45,"_nWin":16,"_nT10":41,"_nMC":85,"_nEdge":50},{"name":"Thomas, Justin","dg_id":14139,"dg_rank":26,"tier":2,"win_pct":1,"top5_pct":7.1,"top10_pct":13.8,"mc_pct":68.4,"sg_total":0,"dg_edge":null,"composite":35,"_nWin":7,"_nT10":24,"_nMC":74,"_nEdge":50},{"name":"Rose, Justin","dg_id":6093,"dg_rank":27,"tier":2,"win_pct":1,"top5_pct":6.5,"top10_pct":13.1,"mc_pct":67.6,"sg_total":0,"dg_edge":null,"composite":34,"_nWin":7,"_nT10":23,"_nMC":74,"_nEdge":50},{"name":"Henley, Russell","dg_id":14578,"dg_rank":21,"tier":2,"win_pct":1.2,"top5_pct":7.9,"top10_pct":16,"mc_pct":73.3,"sg_total":0,"dg_edge":null,"composite":37,"_nWin":9,"_nT10":28,"_nMC":80,"_nEdge":50},{"name":"MacIntyre, Robert","dg_id":23323,"dg_rank":22,"tier":2,"win_pct":1.2,"top5_pct":8.3,"top10_pct":16.4,"mc_pct":73.4,"sg_total":0,"dg_edge":null,"composite":38,"_nWin":9,"_nT10":29,"_nMC":80,"_nEdge":50},{"name":"McNealy, Maverick","dg_id":18634,"dg_rank":24,"tier":2,"win_pct":1.1,"top5_pct":7.7,"top10_pct":15,"mc_pct":70.8,"sg_total":0,"dg_edge":null,"composite":36,"_nWin":8,"_nT10":26,"_nMC":77,"_nEdge":50}],[{"name":"Young, Cameron","dg_id":26651,"dg_rank":4,"tier":1,"win_pct":5.9,"top5_pct":23.9,"top10_pct":37.1,"mc_pct":84.5,"sg_total":0,"dg_edge":null,"composite":62,"_nWin":43,"_nT10":65,"_nMC":92,"_nEdge":50},{"name":"Rahm, Jon","dg_id":19195,"dg_rank":3,"tier":1,"win_pct":6,"top5_pct":25.1,"top10_pct":39.2,"mc_pct":86.1,"sg_total":0,"dg_edge":null,"composite":63,"_nWin":43,"_nT10":69,"_nMC":94,"_nEdge":50},{"name":"DeChambeau, Bryson","dg_id":19841,"dg_rank":8,"tier":1,"win_pct":3,"top5_pct":14.5,"top10_pct":24.9,"mc_pct":77.1,"sg_total":0,"dg_edge":null,"composite":47,"_nWin":22,"_nT10":44,"_nMC":84,"_nEdge":50},{"name":"Gotterup, Chris","dg_id":27774,"dg_rank":12,"tier":2,"win_pct":1.6,"top5_pct":9.3,"top10_pct":17.4,"mc_pct":72.3,"sg_total":0,"dg_edge":null,"composite":39,"_nWin":12,"_nT10":31,"_nMC":79,"_nEdge":50},{"name":"Burns, Sam","dg_id":19483,"dg_rank":16,"tier":2,"win_pct":1.4,"top5_pct":8.7,"top10_pct":16.4,"mc_pct":71.5,"sg_total":0,"dg_edge":null,"composite":38,"_nWin":10,"_nT10":29,"_nMC":78,"_nEdge":50},{"name":"Scott, Adam","dg_id":6430,"dg_rank":14,"tier":2,"win_pct":1.4,"top5_pct":9,"top10_pct":17.4,"mc_pct":73.1,"sg_total":0,"dg_edge":null,"composite":39,"_nWin":10,"_nT10":31,"_nMC":79,"_nEdge":50},{"name":"Kitayama, Kurt","dg_id":21891,"dg_rank":23,"tier":2,"win_pct":1.1,"top5_pct":7.4,"top10_pct":14.4,"mc_pct":69.7,"sg_total":0,"dg_edge":null,"composite":36,"_nWin":8,"_nT10":25,"_nMC":76,"_nEdge":50},{"name":"Cink, Stewart","dg_id":5665,"dg_rank":88,"tier":4,"win_pct":0.1,"top5_pct":1.6,"top10_pct":3.9,"mc_pct":51.8,"sg_total":0,"dg_edge":null,"composite":24,"_nWin":1,"_nT10":7,"_nMC":56,"_nEdge":50}],[{"name":"McIlroy, Rory","dg_id":10091,"dg_rank":2,"tier":1,"win_pct":7.6,"top5_pct":28.6,"top10_pct":42.5,"mc_pct":86.6,"sg_total":0,"dg_edge":null,"composite":69,"_nWin":55,"_nT10":75,"_nMC":94,"_nEdge":50},{"name":"Fitzpatrick, Matt","dg_id":17646,"dg_rank":7,"tier":1,"win_pct":3.1,"top5_pct":16.4,"top10_pct":28.4,"mc_pct":81.5,"sg_total":0,"dg_edge":null,"composite":50,"_nWin":22,"_nT10":50,"_nMC":89,"_nEdge":50},{"name":"Hatton, Tyrrell","dg_id":14796,"dg_rank":30,"tier":2,"win_pct":0.9,"top5_pct":6.4,"top10_pct":13.1,"mc_pct":68.5,"sg_total":0,"dg_edge":null,"composite":34,"_nWin":7,"_nT10":23,"_nMC":74,"_nEdge":50},{"name":"Fowler, Rickie","dg_id":12965,"dg_rank":15,"tier":2,"win_pct":1.4,"top5_pct":8.8,"top10_pct":17,"mc_pct":73.1,"sg_total":0,"dg_edge":null,"composite":38,"_nWin":10,"_nT10":30,"_nMC":79,"_nEdge":50},{"name":"Spaun, J.J.","dg_id":17536,"dg_rank":19,"tier":2,"win_pct":1.2,"top5_pct":8.3,"top10_pct":16.4,"mc_pct":73,"sg_total":0,"dg_edge":null,"composite":38,"_nWin":9,"_nT10":29,"_nMC":79,"_nEdge":50},{"name":"Reed, Patrick","dg_id":14838,"dg_rank":35,"tier":3,"win_pct":0.7,"top5_pct":6.1,"top10_pct":12.8,"mc_pct":70,"sg_total":0,"dg_edge":null,"composite":34,"_nWin":5,"_nT10":22,"_nMC":76,"_nEdge":50},{"name":"Spieth, Jordan","dg_id":14636,"dg_rank":28,"tier":2,"win_pct":0.9,"top5_pct":6.8,"top10_pct":13.8,"mc_pct":70,"sg_total":0,"dg_edge":null,"composite":35,"_nWin":7,"_nT10":24,"_nMC":76,"_nEdge":50},{"name":"Reitan, Kristoffer","dg_id":21407,"dg_rank":40,"tier":3,"win_pct":0.6,"top5_pct":4.9,"top10_pct":10.2,"mc_pct":64.1,"sg_total":0,"dg_edge":null,"composite":31,"_nWin":4,"_nT10":18,"_nMC":70,"_nEdge":50}],[{"name":"Schauffele, Xander","dg_id":19895,"dg_rank":5,"tier":1,"win_pct":5.1,"top5_pct":22.3,"top10_pct":35.4,"mc_pct":83.9,"sg_total":0,"dg_edge":null,"composite":59,"_nWin":37,"_nT10":62,"_nMC":91,"_nEdge":50},{"name":"Aberg, Ludvig","dg_id":23950,"dg_rank":6,"tier":1,"win_pct":4.1,"top5_pct":18.9,"top10_pct":30.8,"mc_pct":81.2,"sg_total":0,"dg_edge":null,"composite":53,"_nWin":30,"_nT10":54,"_nMC":88,"_nEdge":50},{"name":"Morikawa, Collin","dg_id":22085,"dg_rank":17,"tier":2,"win_pct":1.3,"top5_pct":8.9,"top10_pct":17.3,"mc_pct":73.7,"sg_total":0,"dg_edge":null,"composite":38,"_nWin":9,"_nT10":30,"_nMC":80,"_nEdge":50},{"name":"Cantlay, Patrick","dg_id":15466,"dg_rank":10,"tier":1,"win_pct":1.8,"top5_pct":11.1,"top10_pct":20.9,"mc_pct":76.9,"sg_total":0,"dg_edge":null,"composite":42,"_nWin":13,"_nT10":37,"_nMC":84,"_nEdge":50},{"name":"Lee, Min Woo","dg_id":16841,"dg_rank":11,"tier":2,"win_pct":1.8,"top5_pct":10.8,"top10_pct":19.6,"mc_pct":74.9,"sg_total":0,"dg_edge":null,"composite":41,"_nWin":13,"_nT10":34,"_nMC":81,"_nEdge":50},{"name":"Hojgaard, Nicolai","dg_id":23602,"dg_rank":13,"tier":2,"win_pct":1.5,"top5_pct":9.5,"top10_pct":17.8,"mc_pct":73.2,"sg_total":0,"dg_edge":null,"composite":39,"_nWin":11,"_nT10":31,"_nMC":80,"_nEdge":50},{"name":"Kim, Si Woo","dg_id":14609,"dg_rank":18,"tier":2,"win_pct":1.3,"top5_pct":8.5,"top10_pct":16.8,"mc_pct":74.2,"sg_total":0,"dg_edge":null,"composite":38,"_nWin":9,"_nT10":29,"_nMC":81,"_nEdge":50},{"name":"Fitzpatrick, Alex","dg_id":25362,"dg_rank":51,"tier":3,"win_pct":0.4,"top5_pct":3.7,"top10_pct":8.4,"mc_pct":63.3,"sg_total":0,"dg_edge":null,"composite":29,"_nWin":3,"_nT10":15,"_nMC":69,"_nEdge":50}]],"draftOrder":[{"teamIdx":0,"round":0},{"teamIdx":1,"round":0},{"teamIdx":2,"round":0},{"teamIdx":3,"round":0},{"teamIdx":3,"round":1},{"teamIdx":2,"round":1},{"teamIdx":1,"round":1},{"teamIdx":0,"round":1},{"teamIdx":0,"round":2},{"teamIdx":1,"round":2},{"teamIdx":2,"round":2},{"teamIdx":3,"round":2},{"teamIdx":3,"round":3},{"teamIdx":2,"round":3},{"teamIdx":1,"round":3},{"teamIdx":0,"round":3},{"teamIdx":0,"round":4},{"teamIdx":1,"round":4},{"teamIdx":2,"round":4},{"teamIdx":3,"round":4},{"teamIdx":3,"round":5},{"teamIdx":2,"round":5},{"teamIdx":1,"round":5},{"teamIdx":0,"round":5},{"teamIdx":0,"round":6},{"teamIdx":1,"round":6},{"teamIdx":2,"round":6},{"teamIdx":3,"round":6},{"teamIdx":3,"round":7},{"teamIdx":2,"round":7},{"teamIdx":1,"round":7},{"teamIdx":0,"round":7}],"currentPickIdx":32,"draftComplete":true,"liveScores":{},"players":[{"name":"Scheffler, Scottie","dg_id":18417,"dg_rank":1,"tier":1,"win_pct":13.8,"top5_pct":41.9,"top10_pct":57,"mc_pct":91.9,"sg_total":0,"dg_edge":null,"composite":93,"_nWin":100,"_nT10":100,"_nMC":100,"_nEdge":50},{"name":"McIlroy, Rory","dg_id":10091,"dg_rank":2,"tier":1,"win_pct":7.6,"top5_pct":28.6,"top10_pct":42.5,"mc_pct":86.6,"sg_total":0,"dg_edge":null,"composite":69,"_nWin":55,"_nT10":75,"_nMC":94,"_nEdge":50},{"name":"Rahm, Jon","dg_id":19195,"dg_rank":3,"tier":1,"win_pct":6,"top5_pct":25.1,"top10_pct":39.2,"mc_pct":86.1,"sg_total":0,"dg_edge":null,"composite":63,"_nWin":43,"_nT10":69,"_nMC":94,"_nEdge":50},{"name":"Young, Cameron","dg_id":26651,"dg_rank":4,"tier":1,"win_pct":5.9,"top5_pct":23.9,"top10_pct":37.1,"mc_pct":84.5,"sg_total":0,"dg_edge":null,"composite":62,"_nWin":43,"_nT10":65,"_nMC":92,"_nEdge":50},{"name":"Schauffele, Xander","dg_id":19895,"dg_rank":5,"tier":1,"win_pct":5.1,"top5_pct":22.3,"top10_pct":35.4,"mc_pct":83.9,"sg_total":0,"dg_edge":null,"composite":59,"_nWin":37,"_nT10":62,"_nMC":91,"_nEdge":50},{"name":"Aberg, Ludvig","dg_id":23950,"dg_rank":6,"tier":1,"win_pct":4.1,"top5_pct":18.9,"top10_pct":30.8,"mc_pct":81.2,"sg_total":0,"dg_edge":null,"composite":53,"_nWin":30,"_nT10":54,"_nMC":88,"_nEdge":50},{"name":"Fitzpatrick, Matt","dg_id":17646,"dg_rank":7,"tier":1,"win_pct":3.1,"top5_pct":16.4,"top10_pct":28.4,"mc_pct":81.5,"sg_total":0,"dg_edge":null,"composite":50,"_nWin":22,"_nT10":50,"_nMC":89,"_nEdge":50},{"name":"DeChambeau, Bryson","dg_id":19841,"dg_rank":8,"tier":1,"win_pct":3,"top5_pct":14.5,"top10_pct":24.9,"mc_pct":77.1,"sg_total":0,"dg_edge":null,"composite":47,"_nWin":22,"_nT10":44,"_nMC":84,"_nEdge":50},{"name":"Fleetwood, Tommy","dg_id":12294,"dg_rank":9,"tier":1,"win_pct":2.2,"top5_pct":12.7,"top10_pct":23.2,"mc_pct":78.6,"sg_total":0,"dg_edge":null,"composite":45,"_nWin":16,"_nT10":41,"_nMC":85,"_nEdge":50},{"name":"Cantlay, Patrick","dg_id":15466,"dg_rank":10,"tier":1,"win_pct":1.8,"top5_pct":11.1,"top10_pct":20.9,"mc_pct":76.9,"sg_total":0,"dg_edge":null,"composite":42,"_nWin":13,"_nT10":37,"_nMC":84,"_nEdge":50},{"name":"Lee, Min Woo","dg_id":16841,"dg_rank":11,"tier":2,"win_pct":1.8,"top5_pct":10.8,"top10_pct":19.6,"mc_pct":74.9,"sg_total":0,"dg_edge":null,"composite":41,"_nWin":13,"_nT10":34,"_nMC":81,"_nEdge":50},{"name":"Gotterup, Chris","dg_id":27774,"dg_rank":12,"tier":2,"win_pct":1.6,"top5_pct":9.3,"top10_pct":17.4,"mc_pct":72.3,"sg_total":0,"dg_edge":null,"composite":39,"_nWin":12,"_nT10":31,"_nMC":79,"_nEdge":50},{"name":"Hojgaard, Nicolai","dg_id":23602,"dg_rank":13,"tier":2,"win_pct":1.5,"top5_pct":9.5,"top10_pct":17.8,"mc_pct":73.2,"sg_total":0,"dg_edge":null,"composite":39,"_nWin":11,"_nT10":31,"_nMC":80,"_nEdge":50},{"name":"Scott, Adam","dg_id":6430,"dg_rank":14,"tier":2,"win_pct":1.4,"top5_pct":9,"top10_pct":17.4,"mc_pct":73.1,"sg_total":0,"dg_edge":null,"composite":39,"_nWin":10,"_nT10":31,"_nMC":79,"_nEdge":50},{"name":"Fowler, Rickie","dg_id":12965,"dg_rank":15,"tier":2,"win_pct":1.4,"top5_pct":8.8,"top10_pct":17,"mc_pct":73.1,"sg_total":0,"dg_edge":null,"composite":38,"_nWin":10,"_nT10":30,"_nMC":79,"_nEdge":50},{"name":"Burns, Sam","dg_id":19483,"dg_rank":16,"tier":2,"win_pct":1.4,"top5_pct":8.7,"top10_pct":16.4,"mc_pct":71.5,"sg_total":0,"dg_edge":null,"composite":38,"_nWin":10,"_nT10":29,"_nMC":78,"_nEdge":50},{"name":"Morikawa, Collin","dg_id":22085,"dg_rank":17,"tier":2,"win_pct":1.3,"top5_pct":8.9,"top10_pct":17.3,"mc_pct":73.7,"sg_total":0,"dg_edge":null,"composite":38,"_nWin":9,"_nT10":30,"_nMC":80,"_nEdge":50},{"name":"Kim, Si Woo","dg_id":14609,"dg_rank":18,"tier":2,"win_pct":1.3,"top5_pct":8.5,"top10_pct":16.8,"mc_pct":74.2,"sg_total":0,"dg_edge":null,"composite":38,"_nWin":9,"_nT10":29,"_nMC":81,"_nEdge":50},{"name":"Spaun, J.J.","dg_id":17536,"dg_rank":19,"tier":2,"win_pct":1.2,"top5_pct":8.3,"top10_pct":16.4,"mc_pct":73,"sg_total":0,"dg_edge":null,"composite":38,"_nWin":9,"_nT10":29,"_nMC":79,"_nEdge":50},{"name":"Hovland, Viktor","dg_id":18841,"dg_rank":20,"tier":2,"win_pct":1.2,"top5_pct":8.2,"top10_pct":16.3,"mc_pct":72.2,"sg_total":0,"dg_edge":null,"composite":37,"_nWin":9,"_nT10":29,"_nMC":79,"_nEdge":50},{"name":"Henley, Russell","dg_id":14578,"dg_rank":21,"tier":2,"win_pct":1.2,"top5_pct":7.9,"top10_pct":16,"mc_pct":73.3,"sg_total":0,"dg_edge":null,"composite":37,"_nWin":9,"_nT10":28,"_nMC":80,"_nEdge":50},{"name":"MacIntyre, Robert","dg_id":23323,"dg_rank":22,"tier":2,"win_pct":1.2,"top5_pct":8.3,"top10_pct":16.4,"mc_pct":73.4,"sg_total":0,"dg_edge":null,"composite":38,"_nWin":9,"_nT10":29,"_nMC":80,"_nEdge":50},{"name":"Kitayama, Kurt","dg_id":21891,"dg_rank":23,"tier":2,"win_pct":1.1,"top5_pct":7.4,"top10_pct":14.4,"mc_pct":69.7,"sg_total":0,"dg_edge":null,"composite":36,"_nWin":8,"_nT10":25,"_nMC":76,"_nEdge":50},{"name":"McNealy, Maverick","dg_id":18634,"dg_rank":24,"tier":2,"win_pct":1.1,"top5_pct":7.7,"top10_pct":15,"mc_pct":70.8,"sg_total":0,"dg_edge":null,"composite":36,"_nWin":8,"_nT10":26,"_nMC":77,"_nEdge":50},{"name":"Koepka, Brooks","dg_id":16243,"dg_rank":25,"tier":2,"win_pct":1,"top5_pct":7.1,"top10_pct":13.8,"mc_pct":68.7,"sg_total":0,"dg_edge":null,"composite":35,"_nWin":7,"_nT10":24,"_nMC":75,"_nEdge":50},{"name":"Thomas, Justin","dg_id":14139,"dg_rank":26,"tier":2,"win_pct":1,"top5_pct":7.1,"top10_pct":13.8,"mc_pct":68.4,"sg_total":0,"dg_edge":null,"composite":35,"_nWin":7,"_nT10":24,"_nMC":74,"_nEdge":50},{"name":"Rose, Justin","dg_id":6093,"dg_rank":27,"tier":2,"win_pct":1,"top5_pct":6.5,"top10_pct":13.1,"mc_pct":67.6,"sg_total":0,"dg_edge":null,"composite":34,"_nWin":7,"_nT10":23,"_nMC":74,"_nEdge":50},{"name":"Spieth, Jordan","dg_id":14636,"dg_rank":28,"tier":2,"win_pct":0.9,"top5_pct":6.8,"top10_pct":13.8,"mc_pct":70,"sg_total":0,"dg_edge":null,"composite":35,"_nWin":7,"_nT10":24,"_nMC":76,"_nEdge":50},{"name":"Matsuyama, Hideki","dg_id":13562,"dg_rank":29,"tier":2,"win_pct":0.9,"top5_pct":6.7,"top10_pct":13.7,"mc_pct":70.2,"sg_total":0,"dg_edge":null,"composite":35,"_nWin":7,"_nT10":24,"_nMC":76,"_nEdge":50},{"name":"Hatton, Tyrrell","dg_id":14796,"dg_rank":30,"tier":2,"win_pct":0.9,"top5_pct":6.4,"top10_pct":13.1,"mc_pct":68.5,"sg_total":0,"dg_edge":null,"composite":34,"_nWin":7,"_nT10":23,"_nMC":74,"_nEdge":50},{"name":"Detry, Thomas","dg_id":14181,"dg_rank":31,"tier":3,"win_pct":0.8,"top5_pct":5.8,"top10_pct":12,"mc_pct":67.8,"sg_total":0,"dg_edge":null,"composite":33,"_nWin":6,"_nT10":21,"_nMC":74,"_nEdge":50},{"name":"Niemann, Joaquin","dg_id":18079,"dg_rank":32,"tier":3,"win_pct":0.8,"top5_pct":5.4,"top10_pct":11.5,"mc_pct":65.7,"sg_total":0,"dg_edge":null,"composite":32,"_nWin":6,"_nT10":20,"_nMC":71,"_nEdge":50},{"name":"Bradley, Keegan","dg_id":13872,"dg_rank":33,"tier":3,"win_pct":0.7,"top5_pct":5.7,"top10_pct":12,"mc_pct":67,"sg_total":0,"dg_edge":null,"composite":33,"_nWin":5,"_nT10":21,"_nMC":73,"_nEdge":50},{"name":"Puig, David","dg_id":28984,"dg_rank":34,"tier":3,"win_pct":0.7,"top5_pct":5.5,"top10_pct":11.3,"mc_pct":65.3,"sg_total":0,"dg_edge":null,"composite":32,"_nWin":5,"_nT10":20,"_nMC":71,"_nEdge":50},{"name":"Reed, Patrick","dg_id":14838,"dg_rank":35,"tier":3,"win_pct":0.7,"top5_pct":6.1,"top10_pct":12.8,"mc_pct":70,"sg_total":0,"dg_edge":null,"composite":34,"_nWin":5,"_nT10":22,"_nMC":76,"_nEdge":50},{"name":"Smalley, Alex","dg_id":18474,"dg_rank":36,"tier":3,"win_pct":0.7,"top5_pct":4.9,"top10_pct":10.5,"mc_pct":65.3,"sg_total":0,"dg_edge":null,"composite":32,"_nWin":5,"_nT10":18,"_nMC":71,"_nEdge":50},{"name":"Straka, Sepp","dg_id":17511,"dg_rank":37,"tier":3,"win_pct":0.6,"top5_pct":5,"top10_pct":10.3,"mc_pct":64.6,"sg_total":0,"dg_edge":null,"composite":31,"_nWin":4,"_nT10":18,"_nMC":70,"_nEdge":50},{"name":"English, Harris","dg_id":14577,"dg_rank":38,"tier":3,"win_pct":0.6,"top5_pct":5.3,"top10_pct":11.2,"mc_pct":68.2,"sg_total":0,"dg_edge":null,"composite":32,"_nWin":4,"_nT10":20,"_nMC":74,"_nEdge":50},{"name":"Bridgeman, Jacob","dg_id":29433,"dg_rank":39,"tier":3,"win_pct":0.6,"top5_pct":4.6,"top10_pct":10,"mc_pct":64.9,"sg_total":0,"dg_edge":null,"composite":31,"_nWin":4,"_nT10":18,"_nMC":71,"_nEdge":50},{"name":"Reitan, Kristoffer","dg_id":21407,"dg_rank":40,"tier":3,"win_pct":0.6,"top5_pct":4.9,"top10_pct":10.2,"mc_pct":64.1,"sg_total":0,"dg_edge":null,"composite":31,"_nWin":4,"_nT10":18,"_nMC":70,"_nEdge":50},{"name":"Griffin, Ben","dg_id":24968,"dg_rank":41,"tier":3,"win_pct":0.6,"top5_pct":5.2,"top10_pct":11.3,"mc_pct":68.5,"sg_total":0,"dg_edge":null,"composite":33,"_nWin":4,"_nT10":20,"_nMC":74,"_nEdge":50},{"name":"Noren, Alex","dg_id":10419,"dg_rank":42,"tier":3,"win_pct":0.6,"top5_pct":4.7,"top10_pct":10,"mc_pct":66,"sg_total":0,"dg_edge":null,"composite":31,"_nWin":4,"_nT10":18,"_nMC":72,"_nEdge":50},{"name":"Woodland, Gary","dg_id":12577,"dg_rank":43,"tier":3,"win_pct":0.6,"top5_pct":4.5,"top10_pct":9.5,"mc_pct":63.3,"sg_total":0,"dg_edge":null,"composite":30,"_nWin":4,"_nT10":17,"_nMC":69,"_nEdge":50},{"name":"Hall, Harry","dg_id":27194,"dg_rank":44,"tier":3,"win_pct":0.5,"top5_pct":4.8,"top10_pct":10.5,"mc_pct":67,"sg_total":0,"dg_edge":null,"composite":32,"_nWin":4,"_nT10":18,"_nMC":73,"_nEdge":50},{"name":"Bhatia, Akshay","dg_id":26096,"dg_rank":45,"tier":3,"win_pct":0.5,"top5_pct":4.7,"top10_pct":10.3,"mc_pct":65.5,"sg_total":0,"dg_edge":null,"composite":31,"_nWin":4,"_nT10":18,"_nMC":71,"_nEdge":50},{"name":"Lowry, Shane","dg_id":13900,"dg_rank":46,"tier":3,"win_pct":0.5,"top5_pct":4.5,"top10_pct":9.9,"mc_pct":65.5,"sg_total":0,"dg_edge":null,"composite":31,"_nWin":4,"_nT10":17,"_nMC":71,"_nEdge":50},{"name":"Coody, Pierceson","dg_id":28309,"dg_rank":47,"tier":3,"win_pct":0.5,"top5_pct":3.6,"top10_pct":8.1,"mc_pct":61.6,"sg_total":0,"dg_edge":null,"composite":29,"_nWin":4,"_nT10":14,"_nMC":67,"_nEdge":50},{"name":"Day, Jason","dg_id":9771,"dg_rank":48,"tier":3,"win_pct":0.4,"top5_pct":4,"top10_pct":8.7,"mc_pct":62.6,"sg_total":0,"dg_edge":null,"composite":29,"_nWin":3,"_nT10":15,"_nMC":68,"_nEdge":50},{"name":"McCarty, Matt","dg_id":28635,"dg_rank":49,"tier":3,"win_pct":0.4,"top5_pct":3.4,"top10_pct":8,"mc_pct":62.7,"sg_total":0,"dg_edge":null,"composite":29,"_nWin":3,"_nT10":14,"_nMC":68,"_nEdge":50},{"name":"Thorbjornsen, Michael","dg_id":26649,"dg_rank":50,"tier":3,"win_pct":0.4,"top5_pct":3.4,"top10_pct":7.6,"mc_pct":60.1,"sg_total":0,"dg_edge":null,"composite":28,"_nWin":3,"_nT10":13,"_nMC":65,"_nEdge":50},{"name":"Fitzpatrick, Alex","dg_id":25362,"dg_rank":51,"tier":3,"win_pct":0.4,"top5_pct":3.7,"top10_pct":8.4,"mc_pct":63.3,"sg_total":0,"dg_edge":null,"composite":29,"_nWin":3,"_nT10":15,"_nMC":69,"_nEdge":50},{"name":"Gerard, Ryan","dg_id":29767,"dg_rank":52,"tier":3,"win_pct":0.4,"top5_pct":3.4,"top10_pct":8,"mc_pct":62.2,"sg_total":0,"dg_edge":null,"composite":29,"_nWin":3,"_nT10":14,"_nMC":68,"_nEdge":50},{"name":"Clark, Wyndham","dg_id":23604,"dg_rank":53,"tier":3,"win_pct":0.3,"top5_pct":3,"top10_pct":6.8,"mc_pct":58.8,"sg_total":0,"dg_edge":null,"composite":27,"_nWin":2,"_nT10":12,"_nMC":64,"_nEdge":50},{"name":"Conners, Corey","dg_id":17576,"dg_rank":54,"tier":3,"win_pct":0.3,"top5_pct":3.1,"top10_pct":6.8,"mc_pct":60.3,"sg_total":0,"dg_edge":null,"composite":28,"_nWin":2,"_nT10":12,"_nMC":66,"_nEdge":50},{"name":"Mitchell, Keith","dg_id":17365,"dg_rank":55,"tier":3,"win_pct":0.3,"top5_pct":3.2,"top10_pct":7.2,"mc_pct":59.6,"sg_total":0,"dg_edge":null,"composite":28,"_nWin":2,"_nT10":13,"_nMC":65,"_nEdge":50},{"name":"Taylor, Nick","dg_id":13126,"dg_rank":56,"tier":3,"win_pct":0.3,"top5_pct":2.9,"top10_pct":6.9,"mc_pct":61.8,"sg_total":0,"dg_edge":null,"composite":28,"_nWin":2,"_nT10":12,"_nMC":67,"_nEdge":50},{"name":"Theegala, Sahith","dg_id":23014,"dg_rank":57,"tier":3,"win_pct":0.3,"top5_pct":3.2,"top10_pct":7.2,"mc_pct":59.4,"sg_total":0,"dg_edge":null,"composite":28,"_nWin":2,"_nT10":13,"_nMC":65,"_nEdge":50},{"name":"Stevens, Sam","dg_id":25569,"dg_rank":58,"tier":3,"win_pct":0.3,"top5_pct":3.1,"top10_pct":7.3,"mc_pct":61.3,"sg_total":0,"dg_edge":null,"composite":28,"_nWin":2,"_nT10":13,"_nMC":67,"_nEdge":50},{"name":"Hojgaard, Rasmus","dg_id":23838,"dg_rank":59,"tier":3,"win_pct":0.3,"top5_pct":2.9,"top10_pct":6.7,"mc_pct":58.2,"sg_total":0,"dg_edge":null,"composite":27,"_nWin":2,"_nT10":12,"_nMC":63,"_nEdge":50},{"name":"Hisatsune, Ryo","dg_id":22760,"dg_rank":60,"tier":3,"win_pct":0.3,"top5_pct":2.9,"top10_pct":6.8,"mc_pct":60,"sg_total":0,"dg_edge":null,"composite":28,"_nWin":2,"_nT10":12,"_nMC":65,"_nEdge":50},{"name":"Smith, Jordan","dg_id":18586,"dg_rank":61,"tier":4,"win_pct":0.3,"top5_pct":2.9,"top10_pct":6.7,"mc_pct":59.2,"sg_total":0,"dg_edge":null,"composite":27,"_nWin":2,"_nT10":12,"_nMC":64,"_nEdge":50},{"name":"Cauley, Bud","dg_id":14502,"dg_rank":62,"tier":4,"win_pct":0.3,"top5_pct":2.8,"top10_pct":6.6,"mc_pct":59.5,"sg_total":0,"dg_edge":null,"composite":27,"_nWin":2,"_nT10":12,"_nMC":65,"_nEdge":50},{"name":"Fox, Ryan","dg_id":11889,"dg_rank":63,"tier":4,"win_pct":0.2,"top5_pct":2.5,"top10_pct":5.9,"mc_pct":56.9,"sg_total":0,"dg_edge":null,"composite":26,"_nWin":1,"_nT10":10,"_nMC":62,"_nEdge":50},{"name":"Im, Sungjae","dg_id":17488,"dg_rank":64,"tier":4,"win_pct":0.2,"top5_pct":2.5,"top10_pct":5.8,"mc_pct":57.5,"sg_total":0,"dg_edge":null,"composite":26,"_nWin":1,"_nT10":10,"_nMC":62,"_nEdge":50},{"name":"Pendrith, Taylor","dg_id":17780,"dg_rank":65,"tier":4,"win_pct":0.2,"top5_pct":2.5,"top10_pct":5.8,"mc_pct":56.8,"sg_total":0,"dg_edge":null,"composite":26,"_nWin":1,"_nT10":10,"_nMC":62,"_nEdge":50},{"name":"Harman, Brian","dg_id":8825,"dg_rank":66,"tier":4,"win_pct":0.2,"top5_pct":2.3,"top10_pct":5.8,"mc_pct":58.1,"sg_total":0,"dg_edge":null,"composite":26,"_nWin":1,"_nT10":10,"_nMC":63,"_nEdge":50},{"name":"Yellamaraju, Sudarshan","dg_id":29925,"dg_rank":67,"tier":4,"win_pct":0.2,"top5_pct":2.6,"top10_pct":6.1,"mc_pct":57.4,"sg_total":0,"dg_edge":null,"composite":26,"_nWin":1,"_nT10":11,"_nMC":62,"_nEdge":50},{"name":"Wallace, Matt","dg_id":20706,"dg_rank":68,"tier":4,"win_pct":0.2,"top5_pct":2.3,"top10_pct":5.7,"mc_pct":57.6,"sg_total":0,"dg_edge":null,"composite":26,"_nWin":1,"_nT10":10,"_nMC":63,"_nEdge":50},{"name":"Novak, Andrew","dg_id":23475,"dg_rank":69,"tier":4,"win_pct":0.2,"top5_pct":2.2,"top10_pct":5.2,"mc_pct":54.8,"sg_total":0,"dg_edge":null,"composite":25,"_nWin":1,"_nT10":9,"_nMC":60,"_nEdge":50},{"name":"Berger, Daniel","dg_id":17606,"dg_rank":70,"tier":4,"win_pct":0.2,"top5_pct":2.2,"top10_pct":5.7,"mc_pct":56.8,"sg_total":0,"dg_edge":null,"composite":26,"_nWin":1,"_nT10":10,"_nMC":62,"_nEdge":50},{"name":"Hillier, Daniel","dg_id":21362,"dg_rank":71,"tier":4,"win_pct":0.2,"top5_pct":2.1,"top10_pct":5.1,"mc_pct":55.4,"sg_total":0,"dg_edge":null,"composite":25,"_nWin":1,"_nT10":9,"_nMC":60,"_nEdge":50},{"name":"Castillo, Ricky","dg_id":27819,"dg_rank":72,"tier":4,"win_pct":0.2,"top5_pct":2.1,"top10_pct":5.1,"mc_pct":54.7,"sg_total":0,"dg_edge":null,"composite":25,"_nWin":1,"_nT10":9,"_nMC":59,"_nEdge":50},{"name":"Poston, J.T.","dg_id":21554,"dg_rank":73,"tier":4,"win_pct":0.2,"top5_pct":2.3,"top10_pct":5.6,"mc_pct":58,"sg_total":0,"dg_edge":null,"composite":26,"_nWin":1,"_nT10":10,"_nMC":63,"_nEdge":50},{"name":"Brennan, Michael","dg_id":29197,"dg_rank":74,"tier":4,"win_pct":0.2,"top5_pct":2,"top10_pct":4.9,"mc_pct":53.3,"sg_total":0,"dg_edge":null,"composite":25,"_nWin":1,"_nT10":9,"_nMC":58,"_nEdge":50},{"name":"Penge, Marco","dg_id":22465,"dg_rank":75,"tier":4,"win_pct":0.2,"top5_pct":2,"top10_pct":4.7,"mc_pct":52.3,"sg_total":0,"dg_edge":null,"composite":24,"_nWin":1,"_nT10":8,"_nMC":57,"_nEdge":50},{"name":"Homa, Max","dg_id":17538,"dg_rank":76,"tier":4,"win_pct":0.2,"top5_pct":2,"top10_pct":4.7,"mc_pct":53.1,"sg_total":0,"dg_edge":null,"composite":24,"_nWin":1,"_nT10":8,"_nMC":58,"_nEdge":50},{"name":"Rai, Aaron","dg_id":18554,"dg_rank":77,"tier":4,"win_pct":0.2,"top5_pct":2.3,"top10_pct":5.8,"mc_pct":58.8,"sg_total":0,"dg_edge":null,"composite":27,"_nWin":1,"_nT10":10,"_nMC":64,"_nEdge":50},{"name":"Ayora, Angel","dg_id":30445,"dg_rank":78,"tier":4,"win_pct":0.2,"top5_pct":2.1,"top10_pct":5,"mc_pct":55,"sg_total":0,"dg_edge":null,"composite":25,"_nWin":1,"_nT10":9,"_nMC":60,"_nEdge":50},{"name":"McKibbin, Tom","dg_id":22322,"dg_rank":79,"tier":4,"win_pct":0.2,"top5_pct":2.1,"top10_pct":5.1,"mc_pct":56.1,"sg_total":0,"dg_edge":null,"composite":25,"_nWin":1,"_nT10":9,"_nMC":61,"_nEdge":50},{"name":"Johnson, Dustin","dg_id":12422,"dg_rank":80,"tier":4,"win_pct":0.2,"top5_pct":1.7,"top10_pct":4.3,"mc_pct":51.7,"sg_total":0,"dg_edge":null,"composite":24,"_nWin":1,"_nT10":8,"_nMC":56,"_nEdge":50},{"name":"Potgieter, Aldrich","dg_id":27900,"dg_rank":81,"tier":4,"win_pct":0.2,"top5_pct":1.7,"top10_pct":3.9,"mc_pct":48.4,"sg_total":0,"dg_edge":null,"composite":23,"_nWin":1,"_nT10":7,"_nMC":53,"_nEdge":50},{"name":"Rodgers, Patrick","dg_id":16283,"dg_rank":82,"tier":4,"win_pct":0.2,"top5_pct":1.6,"top10_pct":4,"mc_pct":52.4,"sg_total":0,"dg_edge":null,"composite":24,"_nWin":1,"_nT10":7,"_nMC":57,"_nEdge":50},{"name":"Schaper, Jayden","dg_id":26991,"dg_rank":83,"tier":4,"win_pct":0.2,"top5_pct":2.1,"top10_pct":5.1,"mc_pct":57.1,"sg_total":0,"dg_edge":null,"composite":26,"_nWin":1,"_nT10":9,"_nMC":62,"_nEdge":50},{"name":"Bezuidenhout, Christiaan","dg_id":18103,"dg_rank":84,"tier":4,"win_pct":0.2,"top5_pct":1.9,"top10_pct":4.7,"mc_pct":56.9,"sg_total":0,"dg_edge":null,"composite":26,"_nWin":1,"_nT10":8,"_nMC":62,"_nEdge":50},{"name":"Greyserman, Max","dg_id":23465,"dg_rank":85,"tier":4,"win_pct":0.2,"top5_pct":1.7,"top10_pct":4.3,"mc_pct":51.8,"sg_total":0,"dg_edge":null,"composite":24,"_nWin":1,"_nT10":8,"_nMC":56,"_nEdge":50},{"name":"Kim, Michael","dg_id":17543,"dg_rank":86,"tier":4,"win_pct":0.2,"top5_pct":1.7,"top10_pct":4.3,"mc_pct":53.4,"sg_total":0,"dg_edge":null,"composite":24,"_nWin":1,"_nT10":8,"_nMC":58,"_nEdge":50},{"name":"Hoey, Rico","dg_id":23504,"dg_rank":87,"tier":4,"win_pct":0.2,"top5_pct":1.5,"top10_pct":3.9,"mc_pct":50.9,"sg_total":0,"dg_edge":null,"composite":24,"_nWin":1,"_nT10":7,"_nMC":55,"_nEdge":50},{"name":"Cink, Stewart","dg_id":5665,"dg_rank":88,"tier":4,"win_pct":0.1,"top5_pct":1.6,"top10_pct":3.9,"mc_pct":51.8,"sg_total":0,"dg_edge":null,"composite":24,"_nWin":1,"_nT10":7,"_nMC":56,"_nEdge":50},{"name":"Lindberg, Mikael","dg_id":20084,"dg_rank":89,"tier":4,"win_pct":0.1,"top5_pct":1.5,"top10_pct":3.7,"mc_pct":49,"sg_total":0,"dg_edge":null,"composite":23,"_nWin":1,"_nT10":6,"_nMC":53,"_nEdge":50},{"name":"Li, Haotong","dg_id":15310,"dg_rank":90,"tier":4,"win_pct":0.1,"top5_pct":1.6,"top10_pct":4,"mc_pct":51,"sg_total":0,"dg_edge":null,"composite":23,"_nWin":1,"_nT10":7,"_nMC":55,"_nEdge":50},{"name":"Fisk, Steven","dg_id":26657,"dg_rank":91,"tier":4,"win_pct":0.1,"top5_pct":1.3,"top10_pct":3.2,"mc_pct":49.7,"sg_total":0,"dg_edge":null,"composite":23,"_nWin":1,"_nT10":6,"_nMC":54,"_nEdge":50},{"name":"McCarthy, Denny","dg_id":19870,"dg_rank":92,"tier":4,"win_pct":0.1,"top5_pct":1.6,"top10_pct":4.3,"mc_pct":54.3,"sg_total":0,"dg_edge":null,"composite":24,"_nWin":1,"_nT10":8,"_nMC":59,"_nEdge":50},{"name":"Neergaard-Petersen, Rasmus","dg_id":23841,"dg_rank":93,"tier":4,"win_pct":0.1,"top5_pct":1.3,"top10_pct":3.3,"mc_pct":50,"sg_total":0,"dg_edge":null,"composite":23,"_nWin":1,"_nT10":6,"_nMC":54,"_nEdge":50},{"name":"Putnam, Andrew","dg_id":14704,"dg_rank":94,"tier":4,"win_pct":0.1,"top5_pct":1.5,"top10_pct":4.1,"mc_pct":55.9,"sg_total":0,"dg_edge":null,"composite":25,"_nWin":1,"_nT10":7,"_nMC":61,"_nEdge":50},{"name":"Jarvis, Casey","dg_id":26947,"dg_rank":95,"tier":4,"win_pct":0.1,"top5_pct":1.2,"top10_pct":3.3,"mc_pct":50.2,"sg_total":0,"dg_edge":null,"composite":23,"_nWin":1,"_nT10":6,"_nMC":55,"_nEdge":50},{"name":"Parry, John","dg_id":13764,"dg_rank":96,"tier":4,"win_pct":0.1,"top5_pct":1.3,"top10_pct":3.5,"mc_pct":52,"sg_total":0,"dg_edge":null,"composite":23,"_nWin":1,"_nT10":6,"_nMC":56,"_nEdge":50},{"name":"Keefer, Johnny","dg_id":32457,"dg_rank":97,"tier":4,"win_pct":0.1,"top5_pct":1,"top10_pct":2.5,"mc_pct":45.4,"sg_total":0,"dg_edge":null,"composite":21,"_nWin":1,"_nT10":4,"_nMC":49,"_nEdge":50},{"name":"McGreevy, Max","dg_id":23505,"dg_rank":98,"tier":4,"win_pct":0.1,"top5_pct":1.1,"top10_pct":3,"mc_pct":50.1,"sg_total":0,"dg_edge":null,"composite":23,"_nWin":1,"_nT10":5,"_nMC":54,"_nEdge":50},{"name":"Schmid, Matti","dg_id":20722,"dg_rank":99,"tier":4,"win_pct":0.1,"top5_pct":1.1,"top10_pct":3,"mc_pct":46.8,"sg_total":0,"dg_edge":null,"composite":22,"_nWin":1,"_nT10":5,"_nMC":51,"_nEdge":50},{"name":"Smotherman, Austin","dg_id":22985,"dg_rank":100,"tier":4,"win_pct":0.1,"top5_pct":1.2,"top10_pct":3.2,"mc_pct":48.8,"sg_total":0,"dg_edge":null,"composite":22,"_nWin":1,"_nT10":6,"_nMC":53,"_nEdge":50},{"name":"Mouw, William","dg_id":29770,"dg_rank":101,"tier":4,"win_pct":0.1,"top5_pct":1.1,"top10_pct":3,"mc_pct":46.9,"sg_total":0,"dg_edge":null,"composite":22,"_nWin":1,"_nT10":5,"_nMC":51,"_nEdge":50},{"name":"Smith, Cameron","dg_id":15856,"dg_rank":102,"tier":4,"win_pct":0.1,"top5_pct":1.1,"top10_pct":2.9,"mc_pct":47.6,"sg_total":0,"dg_edge":null,"composite":22,"_nWin":1,"_nT10":5,"_nMC":52,"_nEdge":50},{"name":"Jaeger, Stephan","dg_id":16394,"dg_rank":103,"tier":4,"win_pct":0.1,"top5_pct":0.9,"top10_pct":2.7,"mc_pct":46.5,"sg_total":0,"dg_edge":null,"composite":22,"_nWin":1,"_nT10":5,"_nMC":50,"_nEdge":50},{"name":"Kirk, Chris","dg_id":12423,"dg_rank":104,"tier":4,"win_pct":0.1,"top5_pct":1,"top10_pct":2.6,"mc_pct":46.4,"sg_total":0,"dg_edge":null,"composite":21,"_nWin":1,"_nT10":5,"_nMC":50,"_nEdge":50},{"name":"Wiesberger, Bernd","dg_id":9531,"dg_rank":105,"tier":4,"win_pct":0.1,"top5_pct":0.8,"top10_pct":2.3,"mc_pct":46.1,"sg_total":0,"dg_edge":null,"composite":21,"_nWin":1,"_nT10":4,"_nMC":50,"_nEdge":50},{"name":"Echavarria, Nico","dg_id":22833,"dg_rank":106,"tier":4,"win_pct":0.1,"top5_pct":0.7,"top10_pct":2,"mc_pct":43.1,"sg_total":0,"dg_edge":null,"composite":20,"_nWin":1,"_nT10":4,"_nMC":47,"_nEdge":50},{"name":"Valimaki, Sami","dg_id":23816,"dg_rank":107,"tier":4,"win_pct":0.1,"top5_pct":0.8,"top10_pct":2.1,"mc_pct":43.9,"sg_total":0,"dg_edge":null,"composite":21,"_nWin":1,"_nT10":4,"_nMC":48,"_nEdge":50},{"name":"Horschel, Billy","dg_id":11276,"dg_rank":108,"tier":4,"win_pct":0.1,"top5_pct":0.7,"top10_pct":2.2,"mc_pct":43.9,"sg_total":0,"dg_edge":null,"composite":21,"_nWin":1,"_nT10":4,"_nMC":48,"_nEdge":50},{"name":"Vegas, Jhonattan","dg_id":13508,"dg_rank":109,"tier":4,"win_pct":0.1,"top5_pct":0.5,"top10_pct":1.6,"mc_pct":39.5,"sg_total":0,"dg_edge":null,"composite":19,"_nWin":1,"_nT10":3,"_nMC":43,"_nEdge":50},{"name":"Holt, Ian","dg_id":25036,"dg_rank":110,"tier":4,"win_pct":0,"top5_pct":0.7,"top10_pct":2,"mc_pct":42.3,"sg_total":0,"dg_edge":null,"composite":20,"_nWin":0,"_nT10":4,"_nMC":46,"_nEdge":50},{"name":"Snedeker, Brandt","dg_id":8820,"dg_rank":111,"tier":4,"win_pct":0,"top5_pct":0.6,"top10_pct":1.8,"mc_pct":43.2,"sg_total":0,"dg_edge":null,"composite":20,"_nWin":0,"_nT10":3,"_nMC":47,"_nEdge":50},{"name":"Higgo, Garrick","dg_id":24342,"dg_rank":112,"tier":4,"win_pct":0,"top5_pct":0.6,"top10_pct":1.8,"mc_pct":40.7,"sg_total":0,"dg_edge":null,"composite":19,"_nWin":0,"_nT10":3,"_nMC":44,"_nEdge":50},{"name":"Glover, Lucas","dg_id":7399,"dg_rank":113,"tier":4,"win_pct":0,"top5_pct":0.5,"top10_pct":1.5,"mc_pct":41.3,"sg_total":0,"dg_edge":null,"composite":19,"_nWin":0,"_nT10":3,"_nMC":45,"_nEdge":50},{"name":"Saddier, Adrien","dg_id":14792,"dg_rank":114,"tier":4,"win_pct":0,"top5_pct":0.5,"top10_pct":1.5,"mc_pct":39,"sg_total":0,"dg_edge":null,"composite":19,"_nWin":0,"_nT10":3,"_nMC":42,"_nEdge":50},{"name":"Brown, Dan","dg_id":20766,"dg_rank":115,"tier":4,"win_pct":0,"top5_pct":0.6,"top10_pct":1.7,"mc_pct":40.3,"sg_total":0,"dg_edge":null,"composite":19,"_nWin":0,"_nT10":3,"_nMC":44,"_nEdge":50},{"name":"Smylie, Elvis","dg_id":24200,"dg_rank":116,"tier":4,"win_pct":0,"top5_pct":0.4,"top10_pct":1.1,"mc_pct":36.4,"sg_total":0,"dg_edge":null,"composite":18,"_nWin":0,"_nT10":2,"_nMC":39,"_nEdge":50},{"name":"Lipsky, David","dg_id":15980,"dg_rank":117,"tier":4,"win_pct":0,"top5_pct":0.5,"top10_pct":1.5,"mc_pct":40.5,"sg_total":0,"dg_edge":null,"composite":19,"_nWin":0,"_nT10":3,"_nMC":44,"_nEdge":50},{"name":"Grillo, Emiliano","dg_id":12808,"dg_rank":118,"tier":4,"win_pct":0,"top5_pct":0.4,"top10_pct":1.2,"mc_pct":38.3,"sg_total":0,"dg_edge":null,"composite":18,"_nWin":0,"_nT10":2,"_nMC":42,"_nEdge":50},{"name":"Highsmith, Joe","dg_id":28469,"dg_rank":119,"tier":4,"win_pct":0,"top5_pct":0.3,"top10_pct":0.8,"mc_pct":32.7,"sg_total":0,"dg_edge":null,"composite":17,"_nWin":0,"_nT10":1,"_nMC":35,"_nEdge":50},{"name":"Blanchet, Chandler","dg_id":24956,"dg_rank":120,"tier":4,"win_pct":0,"top5_pct":0.4,"top10_pct":1.3,"mc_pct":39.2,"sg_total":0,"dg_edge":null,"composite":19,"_nWin":0,"_nT10":2,"_nMC":43,"_nEdge":50},{"name":"Schenk, Adam","dg_id":19477,"dg_rank":121,"tier":4,"win_pct":0,"top5_pct":0.2,"top10_pct":0.7,"mc_pct":31.1,"sg_total":0,"dg_edge":null,"composite":16,"_nWin":0,"_nT10":1,"_nMC":34,"_nEdge":50},{"name":"Smyth, Trav","dg_id":19232,"dg_rank":122,"tier":4,"win_pct":0,"top5_pct":0.2,"top10_pct":0.5,"mc_pct":28.1,"sg_total":0,"dg_edge":null,"composite":15,"_nWin":0,"_nT10":1,"_nMC":30,"_nEdge":50},{"name":"Kaneko, Kota","dg_id":28268,"dg_rank":123,"tier":4,"win_pct":0,"top5_pct":0.2,"top10_pct":0.8,"mc_pct":35.6,"sg_total":0,"dg_edge":null,"composite":18,"_nWin":0,"_nT10":1,"_nMC":39,"_nEdge":50},{"name":"Hoge, Tom","dg_id":15575,"dg_rank":124,"tier":4,"win_pct":0,"top5_pct":0.3,"top10_pct":0.9,"mc_pct":32.9,"sg_total":0,"dg_edge":null,"composite":17,"_nWin":0,"_nT10":2,"_nMC":36,"_nEdge":50},{"name":"Riley, Davis","dg_id":19872,"dg_rank":125,"tier":4,"win_pct":0,"top5_pct":0.3,"top10_pct":0.8,"mc_pct":30.3,"sg_total":0,"dg_edge":null,"composite":16,"_nWin":0,"_nT10":1,"_nMC":33,"_nEdge":50},{"name":"Campbell, Brian","dg_id":18628,"dg_rank":126,"tier":4,"win_pct":0,"top5_pct":0.2,"top10_pct":0.6,"mc_pct":31.3,"sg_total":0,"dg_edge":null,"composite":16,"_nWin":0,"_nT10":1,"_nMC":34,"_nEdge":50},{"name":"Sullivan, Andy","dg_id":15326,"dg_rank":127,"tier":4,"win_pct":0,"top5_pct":0.2,"top10_pct":0.6,"mc_pct":30.7,"sg_total":0,"dg_edge":null,"composite":16,"_nWin":0,"_nT10":1,"_nMC":33,"_nEdge":50},{"name":"Gumberg, Jordan","dg_id":23892,"dg_rank":128,"tier":4,"win_pct":0,"top5_pct":0.1,"top10_pct":0.2,"mc_pct":19.7,"sg_total":0,"dg_edge":null,"composite":13,"_nWin":0,"_nT10":0,"_nMC":21,"_nEdge":50},{"name":"Harrington, Padraig","dg_id":5716,"dg_rank":129,"tier":4,"win_pct":0,"top5_pct":0.1,"top10_pct":0.3,"mc_pct":22.5,"sg_total":0,"dg_edge":null,"composite":14,"_nWin":0,"_nT10":1,"_nMC":24,"_nEdge":50},{"name":"Kaymer, Martin","dg_id":8117,"dg_rank":130,"tier":4,"win_pct":0,"top5_pct":0.1,"top10_pct":0.4,"mc_pct":26.8,"sg_total":0,"dg_edge":null,"composite":15,"_nWin":0,"_nT10":1,"_nMC":29,"_nEdge":50},{"name":"Jones, Jared","dg_id":29501,"dg_rank":131,"tier":4,"win_pct":0,"top5_pct":0,"top10_pct":0.1,"mc_pct":9.5,"sg_total":0,"dg_edge":null,"composite":10,"_nWin":0,"_nT10":0,"_nMC":10,"_nEdge":50},{"name":"Lenahan, Ryan","dg_id":18711,"dg_rank":132,"tier":4,"win_pct":0,"top5_pct":0,"top10_pct":0,"mc_pct":2.3,"sg_total":0,"dg_edge":null,"composite":8,"_nWin":0,"_nT10":0,"_nMC":2,"_nEdge":50},{"name":"Berg, Derek","dg_id":17617,"dg_rank":133,"tier":4,"win_pct":0,"top5_pct":0,"top10_pct":0.1,"mc_pct":13.6,"sg_total":0,"dg_edge":null,"composite":11,"_nWin":0,"_nT10":0,"_nMC":15,"_nEdge":50},{"name":"Yang, Y.E.","dg_id":6629,"dg_rank":134,"tier":4,"win_pct":0,"top5_pct":0,"top10_pct":0.1,"mc_pct":16.2,"sg_total":0,"dg_edge":null,"composite":12,"_nWin":0,"_nT10":0,"_nMC":17,"_nEdge":50},{"name":"Higa, Kazuki","dg_id":15756,"dg_rank":135,"tier":4,"win_pct":0,"top5_pct":0,"top10_pct":0.1,"mc_pct":20.5,"sg_total":0,"dg_edge":null,"composite":13,"_nWin":0,"_nT10":0,"_nMC":22,"_nEdge":50},{"name":"Vermeer, Ryan","dg_id":7326,"dg_rank":136,"tier":4,"win_pct":0,"top5_pct":0,"top10_pct":0,"mc_pct":7.2,"sg_total":0,"dg_edge":null,"composite":9,"_nWin":0,"_nT10":0,"_nMC":8,"_nEdge":50},{"name":"Dufner, Jason","dg_id":7301,"dg_rank":137,"tier":4,"win_pct":0,"top5_pct":0,"top10_pct":0.1,"mc_pct":14.9,"sg_total":0,"dg_edge":null,"composite":12,"_nWin":0,"_nT10":0,"_nMC":16,"_nEdge":50},{"name":"Fisher, Bryce","dg_id":10027484,"dg_rank":138,"tier":4,"win_pct":0,"top5_pct":0,"top10_pct":0,"mc_pct":3.1,"sg_total":0,"dg_edge":null,"composite":8,"_nWin":0,"_nT10":0,"_nMC":3,"_nEdge":50},{"name":"Haynes, Zach","dg_id":10070406,"dg_rank":139,"tier":4,"win_pct":0,"top5_pct":0,"top10_pct":0,"mc_pct":3.1,"sg_total":0,"dg_edge":null,"composite":8,"_nWin":0,"_nT10":0,"_nMC":3,"_nEdge":50},{"name":"Hurt, Austin","dg_id":29498,"dg_rank":140,"tier":4,"win_pct":0,"top5_pct":0,"top10_pct":0,"mc_pct":3.5,"sg_total":0,"dg_edge":null,"composite":8,"_nWin":0,"_nT10":0,"_nMC":4,"_nEdge":50},{"name":"Shattuck, Braden","dg_id":31027,"dg_rank":141,"tier":4,"win_pct":0,"top5_pct":0,"top10_pct":0,"mc_pct":5.9,"sg_total":0,"dg_edge":null,"composite":9,"_nWin":0,"_nT10":0,"_nMC":6,"_nEdge":50},{"name":"McClure, Paul","dg_id":10058597,"dg_rank":142,"tier":4,"win_pct":0,"top5_pct":0,"top10_pct":0,"mc_pct":3.3,"sg_total":0,"dg_edge":null,"composite":8,"_nWin":0,"_nT10":0,"_nMC":3,"_nEdge":50},{"name":"Donald, Luke","dg_id":4163,"dg_rank":143,"tier":4,"win_pct":0,"top5_pct":0,"top10_pct":0.1,"mc_pct":13.4,"sg_total":0,"dg_edge":null,"composite":11,"_nWin":0,"_nT10":0,"_nMC":14,"_nEdge":50},{"name":"Collet, Tyler","dg_id":28077,"dg_rank":144,"tier":4,"win_pct":0,"top5_pct":0,"top10_pct":0,"mc_pct":8.7,"sg_total":0,"dg_edge":null,"composite":10,"_nWin":0,"_nT10":0,"_nMC":9,"_nEdge":50},{"name":"Kern, Ben","dg_id":25439,"dg_rank":145,"tier":4,"win_pct":0,"top5_pct":0,"top10_pct":0.1,"mc_pct":12.2,"sg_total":0,"dg_edge":null,"composite":11,"_nWin":0,"_nT10":0,"_nMC":13,"_nEdge":50},{"name":"Wiseman, Timothy","dg_id":25085,"dg_rank":146,"tier":4,"win_pct":0,"top5_pct":0,"top10_pct":0,"mc_pct":0.2,"sg_total":0,"dg_edge":null,"composite":8,"_nWin":0,"_nT10":0,"_nMC":0,"_nEdge":50},{"name":"Droemer, Jesse","dg_id":24584,"dg_rank":147,"tier":4,"win_pct":0,"top5_pct":0,"top10_pct":0,"mc_pct":2.3,"sg_total":0,"dg_edge":null,"composite":8,"_nWin":0,"_nT10":0,"_nMC":2,"_nEdge":50},{"name":"Kartrude, Michael","dg_id":23469,"dg_rank":148,"tier":4,"win_pct":0,"top5_pct":0,"top10_pct":0,"mc_pct":6,"sg_total":0,"dg_edge":null,"composite":9,"_nWin":0,"_nT10":0,"_nMC":6,"_nEdge":50},{"name":"Geddes, Mark","dg_id":21886,"dg_rank":149,"tier":4,"win_pct":0,"top5_pct":0,"top10_pct":0,"mc_pct":0.4,"sg_total":0,"dg_edge":null,"composite":8,"_nWin":0,"_nT10":0,"_nMC":0,"_nEdge":50},{"name":"Polland, Ben","dg_id":20344,"dg_rank":150,"tier":4,"win_pct":0,"top5_pct":0,"top10_pct":0,"mc_pct":8.8,"sg_total":0,"dg_edge":null,"composite":10,"_nWin":0,"_nT10":0,"_nMC":9,"_nEdge":50},{"name":"Micheel, Shaun","dg_id":4377,"dg_rank":151,"tier":4,"win_pct":0,"top5_pct":0,"top10_pct":0,"mc_pct":1.8,"sg_total":0,"dg_edge":null,"composite":8,"_nWin":0,"_nT10":0,"_nMC":2,"_nEdge":50},{"name":"Bide, Francisco","dg_id":16776,"dg_rank":152,"tier":4,"win_pct":0,"top5_pct":0,"top10_pct":0,"mc_pct":0.3,"sg_total":0,"dg_edge":null,"composite":8,"_nWin":0,"_nT10":0,"_nMC":0,"_nEdge":50},{"name":"Sapp, Garrett","dg_id":13196,"dg_rank":153,"tier":4,"win_pct":0,"top5_pct":0,"top10_pct":0,"mc_pct":0.6,"sg_total":0,"dg_edge":null,"composite":8,"_nWin":0,"_nT10":0,"_nMC":0,"_nEdge":50},{"name":"Block, Michael","dg_id":12333,"dg_rank":154,"tier":4,"win_pct":0,"top5_pct":0,"top10_pct":0,"mc_pct":3.8,"sg_total":0,"dg_edge":null,"composite":8,"_nWin":0,"_nT10":0,"_nMC":4,"_nEdge":50},{"name":"Walker, Jimmy","dg_id":7293,"dg_rank":155,"tier":4,"win_pct":0,"top5_pct":0,"top10_pct":0.1,"mc_pct":11.5,"sg_total":0,"dg_edge":null,"composite":11,"_nWin":0,"_nT10":0,"_nMC":12,"_nEdge":50},{"name":"Gabriele, Chris","dg_id":10070407,"dg_rank":156,"tier":4,"win_pct":0,"top5_pct":0,"top10_pct":0,"mc_pct":3.1,"sg_total":0,"dg_edge":null,"composite":8,"_nWin":0,"_nT10":0,"_nMC":3,"_nEdge":50}],"oddsData":{"Scheffler, Scottie":{},"McIlroy, Rory":{},"Rahm, Jon":{},"Young, Cameron":{},"Schauffele, Xander":{},"Aberg, Ludvig":{},"Fitzpatrick, Matt":{},"DeChambeau, Bryson":{},"Fleetwood, Tommy":{},"Cantlay, Patrick":{},"Lee, Min Woo":{},"Gotterup, Chris":{},"Hojgaard, Nicolai":{},"Scott, Adam":{},"Fowler, Rickie":{},"Burns, Sam":{},"Morikawa, Collin":{},"Kim, Si Woo":{},"Spaun, J.J.":{},"Hovland, Viktor":{},"Henley, Russell":{},"MacIntyre, Robert":{},"Kitayama, Kurt":{},"McNealy, Maverick":{},"Koepka, Brooks":{},"Thomas, Justin":{},"Rose, Justin":{},"Spieth, Jordan":{},"Matsuyama, Hideki":{},"Hatton, Tyrrell":{},"Detry, Thomas":{},"Niemann, Joaquin":{},"Bradley, Keegan":{},"Puig, David":{},"Reed, Patrick":{},"Smalley, Alex":{},"Straka, Sepp":{},"English, Harris":{},"Bridgeman, Jacob":{},"Reitan, Kristoffer":{},"Griffin, Ben":{},"Noren, Alex":{},"Woodland, Gary":{},"Hall, Harry":{},"Bhatia, Akshay":{},"Lowry, Shane":{},"Coody, Pierceson":{},"Day, Jason":{},"McCarty, Matt":{},"Thorbjornsen, Michael":{},"Fitzpatrick, Alex":{},"Gerard, Ryan":{},"Clark, Wyndham":{},"Conners, Corey":{},"Mitchell, Keith":{},"Theegala, Sahith":{},"Taylor, Nick":{},"Stevens, Sam":{},"Hojgaard, Rasmus":{},"Hisatsune, Ryo":{},"Smith, Jordan":{},"Cauley, Bud":{},"Fox, Ryan":{},"Im, Sungjae":{},"Pendrith, Taylor":{},"Harman, Brian":{},"Yellamaraju, Sudarshan":{},"Wallace, Matt":{},"Novak, Andrew":{},"Berger, Daniel":{},"Hillier, Daniel":{},"Poston, J.T.":{},"Castillo, Ricky":{},"Brennan, Michael":{},"Penge, Marco":{},"Homa, Max":{},"Rai, Aaron":{},"Ayora, Angel":{},"McKibbin, Tom":{},"Johnson, Dustin":{},"Potgieter, Aldrich":{},"Rodgers, Patrick":{},"Schaper, Jayden":{},"Bezuidenhout, Christiaan":{},"Greyserman, Max":{},"Kim, Michael":{},"Hoey, Rico":{},"Cink, Stewart":{},"Lindberg, Mikael":{},"Li, Haotong":{},"Fisk, Steven":{},"McCarthy, Denny":{},"Neergaard-Petersen, Rasmus":{},"Putnam, Andrew":{},"Jarvis, Casey":{},"Parry, John":{},"Keefer, Johnny":{},"McGreevy, Max":{},"Schmid, Matti":{},"Smotherman, Austin":{},"Mouw, William":{},"Smith, Cameron":{},"Kirk, Chris":{},"Jaeger, Stephan":{},"Wiesberger, Bernd":{},"Echavarria, Nico":{},"Valimaki, Sami":{},"Horschel, Billy":{},"Vegas, Jhonattan":{},"Holt, Ian":{},"Snedeker, Brandt":{},"Higgo, Garrick":{},"Glover, Lucas":{},"Brown, Dan":{},"Saddier, Adrien":{},"Smylie, Elvis":{},"Lipsky, David":{},"Grillo, Emiliano":{},"Highsmith, Joe":{},"Blanchet, Chandler":{},"Schenk, Adam":{},"Smyth, Trav":{},"Kaneko, Kota":{},"Hoge, Tom":{},"Riley, Davis":{},"Campbell, Brian":{},"Sullivan, Andy":{},"Gumberg, Jordan":{},"Kaymer, Martin":{},"Harrington, Padraig":{},"Berg, Derek":{},"Lenahan, Ryan":{},"Higa, Kazuki":{},"Vermeer, Ryan":{},"Dufner, Jason":{},"Jones, Jared":{},"Yang, Y.E.":{},"Hurt, Austin":{},"McClure, Paul":{},"Shattuck, Braden":{},"Fisher, Bryce":{},"Donald, Luke":{},"Kern, Ben":{},"Wiseman, Timothy":{},"Droemer, Jesse":{},"Kartrude, Michael":{},"Geddes, Mark":{},"Polland, Ben":{},"Haynes, Zach":{},"Bide, Francisco":{},"Sapp, Garrett":{},"Block, Michael":{},"Walker, Jimmy":{},"Micheel, Shaun":{},"Collet, Tyler":{},"Gabriele, Chris":{}}};
+  document.addEventListener('DOMContentLoaded', function() {
+    init(DRAFT_DATA);
+  });
+})();
+</script>
+</body>
+</html>
