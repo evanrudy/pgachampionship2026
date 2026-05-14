@@ -670,6 +670,16 @@ body {
   vertical-align: middle;
 }
 
+/* ── HOLES REMAINING ───────────────────────────── */
+.th-holes-rem {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
 /* ── SG TOGGLE BAR ─────────────────────────────── */
 .sg-toggle-bar {
   display: flex;
@@ -1101,7 +1111,11 @@ function render() {
     const counting   = sorted.slice(0,N).filter(p=>p.score!==null);
     const total      = counting.reduce((s,p)=>s+p.score,0);
     const cset       = new Set(counting.map(p=>p.name));
-    return { nm, ti, sorted, counting, cset, total, has: counting.length>0 };
+    const holesRem   = ps.reduce((sum, p) => {
+      if (p.thru === 'F' || p.thru === 18) return sum;
+      return sum + (18 - (typeof p.thru === 'number' ? p.thru : 0));
+    }, 0);
+    return { nm, ti, sorted, counting, cset, total, has: counting.length>0, holesRem };
   });
 
   // rank
@@ -1155,6 +1169,7 @@ function render() {
         <div class="th-total">
           <span class="th-score ${tcls}">${ts}</span>
           <span class="th-label">Best ${N}</span>
+          ${Object.keys(liveScores).length ? `<span class="th-holes-rem">${team.holesRem === 0 ? '✓ complete' : team.holesRem + ' holes left'}</span>` : ''}
         </div>
         <div class="th-gap">${gstr}</div>
         <div class="th-chevron">▼</div>
