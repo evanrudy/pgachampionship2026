@@ -955,6 +955,9 @@ async function fetchScores() {
       } catch {}
 
       (ev.competitions || []).forEach(comp => {
+        // Current round number from competition status (1-indexed)
+        const currentRound = comp.status?.period || null;
+
         (comp.competitors || []).forEach(c => {
           const rawName = c.athlete?.displayName || c.athlete?.fullName || '';
           if (!rawName) return;
@@ -963,11 +966,18 @@ async function fetchScores() {
           // Score: c.score (total to par)
           const scoreRaw = c.score ?? null;
 
-          // Today + thru: read from linescores array
-          // ESPN structure: c.linescores = [{period:1, displayValue:"-3", linescores:[...18 hole entries]}, {period:2}]
-          // Current active round = first entry that has nested linescores
+          // Today + thru: find the correct round in linescores.
+          // Use currentRound period to target the right round — avoids R1 data
+          // being mistaken for the active round once R2 starts.
           const rounds = c.linescores || [];
-          const activeRound = rounds.find(l => l.linescores && l.linescores.length > 0);
+          let activeRound;
+          if (currentRound) {
+            activeRound = rounds.find(l => l.period === currentRound);
+          } else {
+            // Fallback: prefer a partially-played round, then most recent completed
+            activeRound = rounds.find(l => l.linescores && l.linescores.length > 0 && l.linescores.length < 18)
+                       || [...rounds].reverse().find(l => l.linescores && l.linescores.length > 0);
+          }
           const todayRaw = activeRound?.displayValue ?? null;
           const holesPlayed = activeRound?.linescores?.length ?? null;
           const thruRaw = holesPlayed === 18 ? 'F' : holesPlayed;
