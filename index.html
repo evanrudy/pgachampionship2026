@@ -997,17 +997,6 @@ async function fetchScores() {
                   || hasCutEntry
                   || c.active === false;
 
-          // Log one high-order player (likely MC) to see their data structure
-          if (c.order > 70 && !ns.__mcSample) {
-            console.log('ESPN likely-MC sample:', name, JSON.stringify({
-              order: c.order,
-              score: c.score,
-              active: c.active,
-              status: c.status,
-              linescores: (c.linescores||[]).map(l=>({ period:l.period, displayValue:l.displayValue, holes:l.linescores?.length }))
-            }));
-            ns.__mcSample = true;
-          }
 
           const pos = c.order ? String(c.order) : null;
 
@@ -1101,6 +1090,7 @@ async function fetchShotsGained() {
       sg_app:   typeof p.sg_app   === 'number' ? p.sg_app   : null,
       sg_arg:   typeof p.sg_arg   === 'number' ? p.sg_arg   : null,
       sg_putt:  typeof p.sg_putt  === 'number' ? p.sg_putt  : null,
+      position: p.position || null,
     };
   });
 
@@ -1125,7 +1115,9 @@ function render() {
       const pos = lv?.pos ?? null;
       // MC penalty: shoot 80 gross on par 70 = +10 per round
       // PGA cuts after R2, so 2 rounds missed = +20 total
-      const isMC = lv?.mc || (pos && /^(mc|wd|dq|cut)/i.test(String(pos).trim()));
+      const isMC = /^(mc|wd|dq|mdf)/i.test(sg?.position || '')
+                || lv?.mc
+                || (pos && /^(mc|wd|dq|cut)/i.test(String(pos).trim()));
       const score = isMC ? (lv?.score ?? 0) + 20 : (lv?.score ?? null);
       const sg = getSG(p.name);
       return { name:p.name, dg_rank:p.dg_rank, tier:p.tier,
