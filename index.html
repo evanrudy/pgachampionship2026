@@ -982,16 +982,42 @@ async function fetchScores() {
           const holesPlayed = activeRound?.linescores?.length ?? null;
           const thruRaw = holesPlayed === 18 ? 'F' : holesPlayed;
 
-          // Position: derive from sort order (ESPN doesn't put pos in competitor obj)
+          // Position and MC status from ESPN status fields
+          const statusBlob = [
+            c.status?.type?.name, c.status?.type?.description,
+            c.status?.type?.detail, c.status?.type?.shortDetail,
+            c.status?.result, c.status?.displayName
+          ].join(' ').toLowerCase();
+          const scoreText = String(c.score ?? '').trim().toUpperCase();
+          const hasCutEntry = (c.linescores||[]).some(l =>
+            /cut/i.test(String(l.displayValue||'') + ' ' + String(l.type||''))
+          );
+          const mc = /cut|miss|withdraw|wd|dq|disqual/.test(statusBlob)
+                  || ['CUT','MC','WD','DQ','MDF'].includes(scoreText)
+                  || hasCutEntry
+                  || c.active === false;
+
+          // Log first 3 competitors raw so we can see ESPN's structure
+          if (!ns.__logCount) ns.__logCount = 0;
+          if (ns.__logCount < 3) {
+            console.log('ESPN competitor sample:', name, JSON.stringify({
+              order: c.order,
+              score: c.score,
+              status: c.status,
+              linescores: (c.linescores||[]).map(l=>({ period:l.period, displayValue:l.displayValue, holes:l.linescores?.length }))
+            }));
+            ns.__logCount++;
+          }
+
           const pos = c.order ? String(c.order) : null;
 
-          // Normalize the key on ingest so accented chars are stripped
           const normKey = normalizeName(name);
           ns[normKey] = {
             score: parseScore(scoreRaw),
             today: parseScore(todayRaw),
             thru:  thruRaw,
-            pos
+            pos,
+            mc
           };
         });
       });
@@ -1099,7 +1125,7 @@ function render() {
       const pos = lv?.pos ?? null;
       // MC penalty: shoot 80 gross on par 70 = +10 per round
       // PGA cuts after R2, so 2 rounds missed = +20 total
-      const isMC = pos && /^(mc|wd|dq|cut)/i.test(String(pos).trim());
+      const isMC = lv?.mc || (pos && /^(mc|wd|dq|cut)/i.test(String(pos).trim()));
       const score = isMC ? (lv?.score ?? 0) + 20 : (lv?.score ?? null);
       const sg = getSG(p.name);
       return { name:p.name, dg_rank:p.dg_rank, tier:p.tier,
