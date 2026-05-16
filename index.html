@@ -1100,7 +1100,7 @@ function render() {
       // MC penalty: shoot 80 gross on par 70 = +10 per round
       // PGA cuts after R2, so 2 rounds missed = +20 total
       const isMC = pos && /^(mc|wd|dq|cut)/i.test(String(pos).trim());
-      const score = isMC ? 20 : (lv?.score ?? null);
+      const score = isMC ? (lv?.score ?? 0) + 20 : (lv?.score ?? null);
       const sg = getSG(p.name);
       return { name:p.name, dg_rank:p.dg_rank, tier:p.tier,
                score, today:lv?.today??null,
