@@ -997,16 +997,16 @@ async function fetchScores() {
                   || hasCutEntry
                   || c.active === false;
 
-          // Log first 3 competitors raw so we can see ESPN's structure
-          if (!ns.__logCount) ns.__logCount = 0;
-          if (ns.__logCount < 3) {
-            console.log('ESPN competitor sample:', name, JSON.stringify({
+          // Log one high-order player (likely MC) to see their data structure
+          if (c.order > 70 && !ns.__mcSample) {
+            console.log('ESPN likely-MC sample:', name, JSON.stringify({
               order: c.order,
               score: c.score,
+              active: c.active,
               status: c.status,
               linescores: (c.linescores||[]).map(l=>({ period:l.period, displayValue:l.displayValue, holes:l.linescores?.length }))
             }));
-            ns.__logCount++;
+            ns.__mcSample = true;
           }
 
           const pos = c.order ? String(c.order) : null;
