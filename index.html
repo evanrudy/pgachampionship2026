@@ -1118,10 +1118,6 @@ function render() {
                 || lv?.mc
                 || (pos && /^(mc|wd|dq|cut)/i.test(String(pos).trim()));
       const score = isMC ? (lv?.score ?? 0) + 20 : (lv?.score ?? null);
-      // Targeted debug for known MC players
-      if (/fleetwood|henley|macintyre/i.test(p.name)) {
-        console.log('MC debug:', p.name, '→ sg:', sg ? JSON.stringify({position:sg.position,sg_total:sg.sg_total}) : 'NOT IN SGSDATA', '| lv.mc:', lv?.mc, '| pos:', pos, '| isMC:', isMC);
-      }
       return { name:p.name, dg_rank:p.dg_rank, tier:p.tier,
                score, today:lv?.today??null,
                thru:lv?.thru??null, pos, isMC,
