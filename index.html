@@ -1137,27 +1137,35 @@ function render() {
     const counting   = sorted.slice(0,N).filter(p=>p.score!==null);
     const total      = counting.reduce((s,p)=>s+p.score,0);
     const cset       = new Set(counting.map(p=>p.name));
+    const fifth      = sorted[N] ?? null;
+    const fifthScore = fifth?.score ?? null;
     const holesRem   = ps.reduce((sum, p) => {
       if (p.isMC) return sum;
       if (p.thru === 'F' || p.thru === 18) return sum;
       return sum + (18 - (typeof p.thru === 'number' ? p.thru : 0));
     }, 0);
-    return { nm, ti, sorted, counting, cset, total, has: counting.length>0, holesRem };
+    return { nm, ti, sorted, counting, cset, total, has: counting.length>0, holesRem, fifthScore, fifth };
   });
 
-  // rank
+  // rank — primary: best 4 total; tiebreaker: 5th golfer score
   const ranked = [...teams].sort((a,b) => {
     if (!a.has && !b.has) return 0;
     if (!a.has) return 1;
     if (!b.has) return -1;
-    return a.total - b.total;
+    if (a.total !== b.total) return a.total - b.total;
+    // Tiebreaker: lower 5th score wins; null = no 5th golfer (loses tiebreak)
+    if (a.fifthScore === null && b.fifthScore === null) return 0;
+    if (a.fifthScore === null) return 1;
+    if (b.fifthScore === null) return -1;
+    return a.fifthScore - b.fifthScore;
   });
 
-  // position labels
+  // position labels — only show T if total AND fifthScore are both equal
+  const trulyTied = (a, b) => a.has && b.has && a.total === b.total && a.fifthScore === b.fifthScore;
   const labels = ranked.map((t,i) => {
     if (!t.has) return {l:'—',s:'',tied:false};
-    const prev = i>0 && ranked[i-1].has && ranked[i-1].total===t.total;
-    const next = i<ranked.length-1 && ranked[i+1].has && ranked[i+1].total===t.total;
+    const prev = i>0          && trulyTied(ranked[i-1], t);
+    const next = i<ranked.length-1 && trulyTied(t, ranked[i+1]);
     const tied = prev||next;
     const n    = i+1;
     const sfx  = n===1?'ST':n===2?'ND':n===3?'RD':'TH';
